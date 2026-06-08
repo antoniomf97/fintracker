@@ -4,13 +4,28 @@ updates:
     directory: "/backend"
     schedule:
       interval: "monthly"
+    groups:
+      uv-dependencies:
+        patterns: ["*"]
+    labels:
+      - "dependabot"
 
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      pre-commit-hooks:
+        patterns: ["*"]
+    labels:
+      - "dependabot"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      github-actions:
+        patterns: ["*"]
+    labels:
+      - "dependabot"
