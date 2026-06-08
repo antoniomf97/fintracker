@@ -7,6 +7,8 @@ updates:
     groups:
       uv-dependencies:
         patterns: ["*"]
+    labels:
+      - "dependabot"
 
   - package-ecosystem: "pre-commit"
     directory: "/"
@@ -15,6 +17,8 @@ updates:
     groups:
       pre-commit-hooks:
         patterns: ["*"]
+    labels:
+      - "dependabot"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -23,3 +27,5 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+    labels:
+      - "dependabot"
