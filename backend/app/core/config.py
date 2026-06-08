@@ -11,4 +11,5 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "sqlite:///./data/fintracker.db"
 
+
 settings = Settings()
