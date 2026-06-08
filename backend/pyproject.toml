@@ -5,6 +5,7 @@ description = "Backend API for fintracker"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]",
+    "pydantic-settings>=2.14.1",
 ]
 
 [dependency-groups]
@@ -22,3 +23,4 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+pythonpath = ["."]
