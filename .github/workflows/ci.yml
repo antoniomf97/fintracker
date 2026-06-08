@@ -23,5 +23,5 @@ jobs:
       - uses: astral-sh/setup-uv@v8.1.0
         with:
           enable-cache: true
-      - run: uv run pytest
+      - run: uv run pytest || [ $? = 5 ] # exit 5 = no tests collected yet
         working-directory: backend
