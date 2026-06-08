@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.database import init_db
-from app.routers import health
+from app.routers import health, transactions
 
 
 @asynccontextmanager
@@ -21,3 +21,4 @@ app = FastAPI(
 )
 
 app.include_router(health.router)
+app.include_router(transactions.router, prefix=settings.API_PREFIX)

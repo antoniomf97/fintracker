@@ -1,4 +1,8 @@
-from sqlalchemy import Column, Date, Float, Integer, String
+import datetime
+from decimal import Decimal
+
+from sqlalchemy import Numeric
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
@@ -6,9 +10,9 @@ from app.database import Base
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id = Column(Integer, primary_key=True, index=True)
-    date = Column(Date, nullable=False, index=True)
-    type = Column(String, nullable=False)
-    category = Column(String, nullable=False, index=True)
-    amount = Column(Float, nullable=False)
-    description = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    date: Mapped[datetime.date] = mapped_column(index=True)
+    type: Mapped[str]
+    category: Mapped[str] = mapped_column(index=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    description: Mapped[str | None]
