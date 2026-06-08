@@ -1,0 +1,16 @@
+# OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Environment files — repo-wide safety net; .env.example stays tracked
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
