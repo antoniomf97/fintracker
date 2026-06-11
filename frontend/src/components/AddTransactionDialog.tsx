@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-import { createTransaction } from "../api";
-import type { NewTransaction, TransactionType } from "../types";
+import { createRecurring, createTransaction, generateRecurring } from "../api";
+import type { Frequency, TransactionType } from "../types";
 
 interface Props {
   onClose: () => void;
@@ -13,12 +13,24 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+const FREQUENCIES: Frequency[] = [
+  "daily",
+  "weekly",
+  "biweekly",
+  "monthly",
+  "quarterly",
+  "yearly",
+];
+
 export function AddTransactionDialog({ onClose, onCreated }: Props) {
   const [type, setType] = useState<TransactionType>("expense");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today());
+  const [recurring, setRecurring] = useState(false);
+  const [frequency, setFrequency] = useState<Frequency>("monthly");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,16 +39,29 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
     setError(null);
     setSubmitting(true);
 
-    const payload: NewTransaction = {
-      date,
-      type,
-      category: category.trim(),
-      amount,
-      description: description.trim() || null,
-    };
-
     try {
-      await createTransaction(payload);
+      if (recurring) {
+        await createRecurring({
+          type,
+          category: category.trim(),
+          amount,
+          description: description.trim() || null,
+          frequency,
+          start_date: date,
+          end_date: endDate || null,
+          is_active: true,
+        });
+        // Materialize any transactions already due so they show up right away.
+        await generateRecurring();
+      } else {
+        await createTransaction({
+          date,
+          type,
+          category: category.trim(),
+          amount,
+          description: description.trim() || null,
+        });
+      }
       onCreated();
     } catch (err) {
       setError((err as Error).message);
@@ -93,7 +118,7 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
       </label>
 
       <label className="field">
-        <span>Date</span>
+        <span>{recurring ? "Start Date" : "Date"}</span>
         <input
           type="date"
           value={date}
@@ -101,6 +126,49 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
           required
         />
       </label>
+
+      <div className="field field--inline">
+        <span>Recurring</span>
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={recurring}
+            onChange={(event) => setRecurring(event.target.checked)}
+          />
+          <span className="toggle__slider" />
+        </label>
+      </div>
+
+      {recurring && (
+        <>
+          <label className="field">
+            <span>Frequency</span>
+            <select
+              value={frequency}
+              onChange={(event) =>
+                setFrequency(event.target.value as Frequency)
+              }
+            >
+              {FREQUENCIES.map((f) => (
+                <option key={f} value={f}>
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="field">
+            <span>
+              End Date <em>(optional)</em>
+            </span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(event) => setEndDate(event.target.value)}
+            />
+          </label>
+        </>
+      )}
 
       {error && <p className="dialog__error">{error}</p>}
 
@@ -113,7 +181,11 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
           className="btn btn--primary"
           disabled={submitting}
         >
-          {submitting ? "Adding…" : "Add Transaction"}
+          {submitting
+            ? "Adding…"
+            : recurring
+              ? "Add Recurring"
+              : "Add Transaction"}
         </button>
       </div>
     </form>
