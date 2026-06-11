@@ -8,6 +8,26 @@
   margin: 0 auto;
   padding: 2rem 1.5rem 1rem;
   border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header__btn {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.header__btn:hover {
+  background: #f8fafc;
+  border-color: #38a3e1;
+  color: #38a3e1;
 }
 
 .brand {
@@ -169,6 +189,55 @@
   margin-bottom: 0.9rem;
 }
 
+.field--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle__slider {
+  position: absolute;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.toggle__slider::before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.toggle input:checked + .toggle__slider {
+  background: #38a3e1;
+}
+
+.toggle input:checked + .toggle__slider::before {
+  transform: translateX(18px);
+}
+
 .field > span {
   font-size: 0.7rem;
   font-weight: 600;
@@ -243,4 +312,139 @@
 
 .btn--ghost:hover {
   background: #f8fafc;
+}
+
+/* Recurring panel — floating card below the header on the right */
+.panel {
+  position: fixed;
+  top: 5rem;
+  right: 2rem;
+  z-index: 100;
+  width: 340px;
+  max-width: calc(100vw - 4rem);
+  max-height: calc(100vh - 7rem);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel__close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.panel__close:hover {
+  color: #475569;
+}
+
+.rules {
+  list-style: none;
+  margin: 0.5rem 0 1rem;
+  padding: 0;
+}
+
+.rule {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.rule:last-child {
+  border-bottom: none;
+}
+
+.rule__category {
+  margin-left: 0.5rem;
+}
+
+.rule__meta {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+.panel__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rule__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: #f8fafc;
+  border-color: #38a3e1;
+}
+
+/* Centered modal (edit / confirm) — intentionally blocks while acting */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  width: 100%;
+  max-width: 360px;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.modal__message {
+  margin: 0 0 1.25rem;
+}
+
+.btn--danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn--danger:hover {
+  background: #b91c1c;
+}
+
+.btn--danger:disabled {
+  opacity: 0.6;
+  cursor: default;
 }

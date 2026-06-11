@@ -31,3 +31,4 @@ class TransactionRead(TransactionBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    recurring_id: int | None = None

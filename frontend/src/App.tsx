@@ -2,8 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 
 import { fetchTransactions } from "./api";
 import { AddTransactionDialog } from "./components/AddTransactionDialog";
+import { RecurringPanel } from "./components/RecurringPanel";
 import type { Transaction } from "./types";
 import "./App.css";
+
+type Overlay = "add" | "recurring" | null;
 
 function formatAmount(amount: string, type: Transaction["type"]): string {
   const value = Number(amount);
@@ -15,7 +18,7 @@ function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [overlay, setOverlay] = useState<Overlay>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -33,8 +36,17 @@ function App() {
   return (
     <div className="page">
       <header className="header">
-        <h1 className="brand">Fintracker</h1>
-        <p className="subtitle">Personal Finance Tracker</p>
+        <div>
+          <h1 className="brand">Fintracker</h1>
+          <p className="subtitle">Personal Finance Tracker</p>
+        </div>
+        <button
+          type="button"
+          className="header__btn"
+          onClick={() => setOverlay("recurring")}
+        >
+          ↻ Recurring
+        </button>
       </header>
 
       <main className="container">
@@ -83,20 +95,24 @@ function App() {
       <button
         type="button"
         className="fab"
-        onClick={() => setDialogOpen(true)}
+        onClick={() => setOverlay("add")}
         aria-label="Add transaction"
       >
         +
       </button>
 
-      {dialogOpen && (
+      {overlay === "add" && (
         <AddTransactionDialog
-          onClose={() => setDialogOpen(false)}
+          onClose={() => setOverlay(null)}
           onCreated={() => {
-            setDialogOpen(false);
+            setOverlay(null);
             load();
           }}
         />
+      )}
+
+      {overlay === "recurring" && (
+        <RecurringPanel onClose={() => setOverlay(null)} onChanged={load} />
       )}
     </div>
   );
