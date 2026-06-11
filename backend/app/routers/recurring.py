@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import RecurringTransaction, Transaction
 from app.schemas.recurring import RecurringCreate, RecurringRead, RecurringUpdate
+from app.services.categories import ensure_category
 from app.services.recurring import generate_due_transactions
 
 router = APIRouter(prefix="/recurring", tags=["recurring"])
@@ -17,6 +18,7 @@ DbSession = Annotated[Session, Depends(get_db)]
 def create_recurring(payload: RecurringCreate, db: DbSession) -> RecurringTransaction:
     rule = RecurringTransaction(**payload.model_dump())
     db.add(rule)
+    ensure_category(db, rule.category)
     db.commit()
     db.refresh(rule)
     return rule
@@ -54,6 +56,7 @@ def update_recurring(
         )
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(rule, key, value)
+    ensure_category(db, rule.category)
     db.commit()
     db.refresh(rule)
     return rule

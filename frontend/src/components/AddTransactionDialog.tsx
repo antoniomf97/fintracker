@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
-import { createRecurring, createTransaction, generateRecurring } from "../api";
-import type { Frequency, TransactionType } from "../types";
+import {
+  createRecurring,
+  createTransaction,
+  fetchCategories,
+  generateRecurring,
+} from "../api";
+import type { Category, Frequency, TransactionType } from "../types";
 
 interface Props {
   onClose: () => void;
@@ -22,9 +27,14 @@ const FREQUENCIES: Frequency[] = [
   "yearly",
 ];
 
+// Sentinel select value that reveals the free-text field for a brand-new category.
+const NEW_CATEGORY = "__new__";
+
 export function AddTransactionDialog({ onClose, onCreated }: Props) {
   const [type, setType] = useState<TransactionType>("expense");
-  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryChoice, setCategoryChoice] = useState("");
+  const [newCategory, setNewCategory] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today());
@@ -34,16 +44,33 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    fetchCategories()
+      .then(setCategories)
+      .catch(() => {
+        // Non-fatal: the user can still add a new category by typing one.
+      });
+  }, []);
+
+  const category =
+    categoryChoice === NEW_CATEGORY ? newCategory.trim() : categoryChoice;
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    if (!category) {
+      setError("Please choose or enter a category.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       if (recurring) {
         await createRecurring({
           type,
-          category: category.trim(),
+          category,
           amount,
           description: description.trim() || null,
           frequency,
@@ -57,7 +84,7 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
         await createTransaction({
           date,
           type,
-          category: category.trim(),
+          category,
           amount,
           description: description.trim() || null,
         });
@@ -86,13 +113,35 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
 
       <label className="field">
         <span>Category</span>
-        <input
-          value={category}
-          onChange={(event) => setCategory(event.target.value)}
-          placeholder="e.g. groceries"
+        <select
+          value={categoryChoice}
+          onChange={(event) => setCategoryChoice(event.target.value)}
           required
-        />
+        >
+          <option value="" disabled>
+            Select a category
+          </option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.name}>
+              {c.name}
+            </option>
+          ))}
+          <option value={NEW_CATEGORY}>+ Add new category…</option>
+        </select>
       </label>
+
+      {categoryChoice === NEW_CATEGORY && (
+        <label className="field">
+          <span>New Category</span>
+          <input
+            value={newCategory}
+            onChange={(event) => setNewCategory(event.target.value)}
+            placeholder="e.g. salary"
+            required
+            autoFocus
+          />
+        </label>
+      )}
 
       <label className="field">
         <span>

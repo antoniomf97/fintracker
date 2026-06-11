@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
-import { updateRecurring } from "../api";
+import { fetchCategories, updateRecurring } from "../api";
 import type {
+  Category,
   Frequency,
   RecurringTransaction,
   TransactionType,
@@ -23,9 +24,14 @@ const FREQUENCIES: Frequency[] = [
   "yearly",
 ];
 
+// Sentinel select value that reveals the free-text field for a brand-new category.
+const NEW_CATEGORY = "__new__";
+
 export function EditRecurringDialog({ rule, onClose, onSaved }: Props) {
   const [type, setType] = useState<TransactionType>(rule.type);
-  const [category, setCategory] = useState(rule.category);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryChoice, setCategoryChoice] = useState(rule.category);
+  const [newCategory, setNewCategory] = useState("");
   const [description, setDescription] = useState(rule.description ?? "");
   const [amount, setAmount] = useState(rule.amount);
   const [frequency, setFrequency] = useState<Frequency>(rule.frequency);
@@ -35,15 +41,39 @@ export function EditRecurringDialog({ rule, onClose, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    fetchCategories()
+      .then(setCategories)
+      .catch(() => {
+        // Non-fatal: the user can still add a new category by typing one.
+      });
+  }, []);
+
+  const category =
+    categoryChoice === NEW_CATEGORY ? newCategory.trim() : categoryChoice;
+
+  // Always include the rule's current category so it stays selected even before
+  // the list loads or if it isn't stored yet.
+  const names = categories.map((c) => c.name);
+  const optionNames = names.includes(rule.category)
+    ? names
+    : [rule.category, ...names];
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    if (!category) {
+      setError("Please choose or enter a category.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       await updateRecurring(rule.id, {
         type,
-        category: category.trim(),
+        category,
         amount,
         description: description.trim() || null,
         frequency,
@@ -80,12 +110,32 @@ export function EditRecurringDialog({ rule, onClose, onSaved }: Props) {
 
         <label className="field">
           <span>Category</span>
-          <input
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
+          <select
+            value={categoryChoice}
+            onChange={(event) => setCategoryChoice(event.target.value)}
             required
-          />
+          >
+            {optionNames.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+            <option value={NEW_CATEGORY}>+ Add new category…</option>
+          </select>
         </label>
+
+        {categoryChoice === NEW_CATEGORY && (
+          <label className="field">
+            <span>New Category</span>
+            <input
+              value={newCategory}
+              onChange={(event) => setNewCategory(event.target.value)}
+              placeholder="e.g. salary"
+              required
+              autoFocus
+            />
+          </label>
+        )}
 
         <label className="field">
           <span>

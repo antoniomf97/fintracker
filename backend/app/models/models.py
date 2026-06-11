@@ -7,6 +7,14 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
 
+class Category(Base):
+    __tablename__ = "categories"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # Saved the first time a transaction or recurring rule uses this name.
+    name: Mapped[str] = mapped_column(unique=True, index=True)
+
+
 class Transaction(Base):
     __tablename__ = "transactions"
 

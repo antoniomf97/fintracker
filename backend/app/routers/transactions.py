@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import Transaction
 from app.schemas.transaction import TransactionCreate, TransactionRead, TransactionUpdate
+from app.services.categories import ensure_category
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -16,6 +17,7 @@ DbSession = Annotated[Session, Depends(get_db)]
 def create_transaction(payload: TransactionCreate, db: DbSession) -> Transaction:
     transaction = Transaction(**payload.model_dump())
     db.add(transaction)
+    ensure_category(db, transaction.category)
     db.commit()
     db.refresh(transaction)
     return transaction
@@ -43,6 +45,7 @@ def update_transaction(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(transaction, key, value)
+    ensure_category(db, transaction.category)
     db.commit()
     db.refresh(transaction)
     return transaction
