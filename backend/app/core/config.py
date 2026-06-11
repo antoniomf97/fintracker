@@ -11,5 +11,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "sqlite:///./data/fintracker.db"
 
+    # Origins allowed to call the API from a browser (Vite dev server by default).
+    CORS_ORIGINS: list[str] = ["http://localhost:5173"]
+
 
 settings = Settings()

@@ -1,0 +1,246 @@
+.page {
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #38a3e1;
+}
+
+.subtitle {
+  margin: 0.15rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Layout */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.count {
+  margin: 0 0 1rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.status {
+  color: #64748b;
+  padding: 1rem 0;
+}
+
+.status--error {
+  color: #dc2626;
+}
+
+/* Table */
+.transactions {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.transactions th,
+.transactions td {
+  text-align: left;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.transactions thead th {
+  font-weight: 600;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.transactions tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.transactions tbody tr:hover {
+  background: #f8fafc;
+}
+
+.col-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount--income {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.amount--expense {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge--income {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge--expense {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Floating action button */
+.fab {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #38a3e1;
+  color: #fff;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(56, 163, 225, 0.4);
+  transition: background 0.15s ease;
+}
+
+.fab:hover {
+  background: #2f8fcd;
+}
+
+/* Dialog — floating card above the FAB, does not block the page */
+.dialog {
+  position: fixed;
+  right: 2rem;
+  bottom: 6rem; /* clears the 56px FAB anchored at bottom: 2rem */
+  z-index: 100;
+  width: 320px;
+  max-width: calc(100vw - 4rem);
+  max-height: calc(100vh - 8rem);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.dialog__title {
+  margin: 0 0 1.25rem;
+  font-size: 1.2rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+
+.field > span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.field > span em {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.field input,
+.field select {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: #38a3e1;
+  box-shadow: 0 0 0 3px rgba(56, 163, 225, 0.15);
+}
+
+.dialog__error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn--primary {
+  background: #38a3e1;
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: #2f8fcd;
+}
+
+.btn--primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn--ghost {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn--ghost:hover {
+  background: #f8fafc;
+}
