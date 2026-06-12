@@ -1,0 +1,13 @@
+date,type,category,amount,description
+2026-01-07,expense,rent,900.00,
+2026-01-10,expense,groceries,150.50,Weekly shop
+2026-01-15,expense,food,45.00,Dinner out
+2026-01-20,savings,emergency fund,300.00,
+2026-02-06,income,freelance,500.00,Side project
+2026-02-08,expense,rent,900.00,
+2026-02-12,expense,groceries,165.25,
+2026-02-18,expense,utilities,120.00,Electricity and water
+2026-02-25,savings,investment,400.00,Index fund
+2026-03-09,expense,rent,900.00,
+2026-03-14,expense,food,60.00,
+2026-03-28,savings,emergency fund,250.00,
