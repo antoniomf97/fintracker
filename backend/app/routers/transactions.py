@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import Transaction
 from app.schemas.transaction import TransactionCreate, TransactionRead, TransactionUpdate
+from app.services.balance import available_balance
 from app.services.categories import ensure_category
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -15,6 +16,11 @@ DbSession = Annotated[Session, Depends(get_db)]
 
 @router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 def create_transaction(payload: TransactionCreate, db: DbSession) -> Transaction:
+    if payload.type == "savings" and payload.amount > available_balance(db):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You don't have enough available money",
+        )
     transaction = Transaction(**payload.model_dump())
     db.add(transaction)
     ensure_category(db, transaction.category)

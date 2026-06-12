@@ -13,7 +13,8 @@ const EMPTY_FILTERS: Filters = { type: "all", category: "", from: "", to: "" };
 
 function formatAmount(amount: string, type: Transaction["type"]): string {
   const value = Number(amount);
-  const sign = type === "expense" ? "-" : "+";
+  // Savings is money set aside (a transfer out of available funds), shown neutral.
+  const sign = type === "income" ? "+" : type === "expense" ? "-" : "";
   return `${sign}€${value.toFixed(2)}`;
 }
 

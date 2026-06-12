@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-TransactionType = Literal["income", "expense"]
+TransactionType = Literal["income", "expense", "savings"]
 
 
 class TransactionBase(BaseModel):

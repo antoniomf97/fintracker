@@ -108,6 +108,7 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
         >
           <option value="expense">Expense</option>
           <option value="income">Income</option>
+          <option value="savings">Savings</option>
         </select>
       </label>
 
