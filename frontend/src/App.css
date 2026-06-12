@@ -67,10 +67,61 @@
 /* Analytics summary */
 .analytics {
   display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics__body {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 2rem;
-  margin-bottom: 1.5rem;
+}
+
+.analytics__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.range-pill {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.range-pill:hover {
+  border-color: #38a3e1;
+  color: #38a3e1;
+}
+
+.range-pill--active,
+.range-pill--active:hover {
+  background: #38a3e1;
+  border-color: #38a3e1;
+  color: #fff;
+}
+
+.analytics__custom {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.analytics__custom input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: #475569;
 }
 
 .analytics__donut {
@@ -82,8 +133,8 @@
 
 .donut {
   position: relative;
-  width: 240px;
-  height: 240px;
+  width: 280px;
+  height: 280px;
 }
 
 .donut__center {
@@ -95,6 +146,8 @@
   justify-content: center;
   gap: 2px;
   pointer-events: none;
+  /* Sit slightly above the geometric center, leaving room for the hover line. */
+  transform: translateY(-14px);
 }
 
 .donut__pct {
@@ -103,15 +156,29 @@
 }
 
 .donut__caption {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  /* letter-spacing: 0.08em; */
   color: #94a3b8;
 }
 
 .donut__balance {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
+}
+
+/* Hover readout, anchored to the donut's center so it stays centered and never
+   shifts the balance. translate keeps it horizontally centered + nudged below. */
+.donut__active {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, 20px);
+  text-align: center;
+  line-height: 1.3;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .analytics__legend,
