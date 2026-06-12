@@ -57,7 +57,8 @@ function presetRange(key: RangeKey, now: Date): { from: string; to: string } {
     case "6m":
       return { from: monthsBack(6), to };
     case "year":
-      return { from: monthsBack(12), to };
+      // Year to date: Jan 1 of the current year through today.
+      return { from: isoDate(new Date(now.getFullYear(), 0, 1)), to };
     default:
       return { from: "", to: "" };
   }
@@ -116,6 +117,10 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [active, setActive] = useState<number | null>(null);
+  const [barHover, setBarHover] = useState<{
+    type: TransactionType;
+    name: string;
+  } | null>(null);
 
   const range =
     rangeKey === "custom"
@@ -259,6 +264,10 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
             const slices = categorySlices(inScope, type);
             const total = totals[type];
             const color = TYPE_COLOR[type];
+            const hovered =
+              barHover?.type === type
+                ? slices.find((s) => s.name === barHover.name)
+                : undefined;
             return (
               <div className="breakdown" key={type}>
                 <div className="breakdown__head">
@@ -266,7 +275,11 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                     {label}
                   </span>
                   <span className="breakdown__total" style={{ color }}>
-                    {euro(total)}
+                    {hovered
+                      ? `${hovered.name} ${euro(hovered.amount)} (${Math.round(
+                          (hovered.amount / total) * 100,
+                        )}%)`
+                      : euro(total)}
                   </span>
                 </div>
                 <div className="breakdown__bar">
@@ -280,6 +293,8 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                           background: c.color,
                         }}
                         title={`${c.name}: ${euro(c.amount)}`}
+                        onMouseEnter={() => setBarHover({ type, name: c.name })}
+                        onMouseLeave={() => setBarHover(null)}
                       />
                     ))
                   ) : (

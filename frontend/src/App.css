@@ -235,6 +235,8 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: #334155;
+  white-space: nowrap;
+  padding-left: 0.75rem;
 }
 
 .breakdown__bar {
