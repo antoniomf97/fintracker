@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchTransactions } from "./api";
 import { AddTransactionDialog } from "./components/AddTransactionDialog";
+import { Analytics } from "./components/Analytics";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
 import type { Filters, Transaction } from "./types";
@@ -75,6 +76,10 @@ function App() {
       </header>
 
       <main className="container">
+        {!loading && !error && transactions.length > 0 && (
+          <Analytics transactions={transactions} />
+        )}
+
         <section className="card">
           {loading && <p className="status">Loading…</p>}
           {error && <p className="status status--error">{error}</p>}
