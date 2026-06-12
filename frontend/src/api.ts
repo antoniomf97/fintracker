@@ -1,4 +1,5 @@
 import type {
+  Category,
   NewRecurring,
   NewTransaction,
   RecurringTransaction,
@@ -6,6 +7,14 @@ import type {
 } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
+export async function fetchCategories(): Promise<Category[]> {
+  const response = await fetch(`${API_BASE}/api/v1/categories`);
+  if (!response.ok) {
+    throw new Error(`Failed to load categories (${response.status})`);
+  }
+  return response.json();
+}
 
 export async function fetchTransactions(): Promise<Transaction[]> {
   const response = await fetch(`${API_BASE}/api/v1/transactions`);

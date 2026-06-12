@@ -73,6 +73,37 @@
   color: #dc2626;
 }
 
+/* Filter bar */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.filters select,
+.filters input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #475569;
+}
+
+.filters select:focus,
+.filters input:focus {
+  outline: none;
+  border-color: #38a3e1;
+  box-shadow: 0 0 0 3px rgba(56, 163, 225, 0.15);
+}
+
+.filters__category {
+  flex: 1;
+  min-width: 140px;
+}
+
 /* Table */
 .transactions {
   width: 100%;

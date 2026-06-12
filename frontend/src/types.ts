@@ -1,5 +1,10 @@
 export type TransactionType = "income" | "expense";
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
 export interface Transaction {
   id: number;
   date: string;
@@ -15,6 +20,16 @@ export interface NewTransaction {
   category: string;
   amount: string;
   description: string | null;
+}
+
+// "all" means the type filter is off; otherwise it narrows to one transaction type.
+export type TypeFilter = TransactionType | "all";
+
+export interface Filters {
+  type: TypeFilter;
+  category: string;
+  from: string; // ISO date (yyyy-mm-dd); empty means no lower bound
+  to: string; // ISO date (yyyy-mm-dd); empty means no upper bound
 }
 
 export type Frequency =

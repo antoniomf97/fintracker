@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchTransactions } from "./api";
 import { AddTransactionDialog } from "./components/AddTransactionDialog";
 import { RecurringPanel } from "./components/RecurringPanel";
-import type { Transaction } from "./types";
+import { TransactionFilters } from "./components/TransactionFilters";
+import type { Filters, Transaction } from "./types";
 import "./App.css";
 
 type Overlay = "add" | "recurring" | null;
+
+const EMPTY_FILTERS: Filters = { type: "all", category: "", from: "", to: "" };
 
 function formatAmount(amount: string, type: Transaction["type"]): string {
   const value = Number(amount);
@@ -14,11 +17,32 @@ function formatAmount(amount: string, type: Transaction["type"]): string {
   return `${sign}€${value.toFixed(2)}`;
 }
 
+// Dates are ISO strings (yyyy-mm-dd), so lexicographic comparison matches date order.
+function applyFilters(
+  transactions: Transaction[],
+  filters: Filters,
+): Transaction[] {
+  const category = filters.category.trim().toLowerCase();
+  return transactions.filter((t) => {
+    if (filters.type !== "all" && t.type !== filters.type) return false;
+    if (category && !t.category.toLowerCase().includes(category)) return false;
+    if (filters.from && t.date < filters.from) return false;
+    if (filters.to && t.date > filters.to) return false;
+    return true;
+  });
+}
+
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+
+  const visible = useMemo(
+    () => applyFilters(transactions, filters),
+    [transactions, filters],
+  );
 
   const load = useCallback(() => {
     setLoading(true);
@@ -53,41 +77,58 @@ function App() {
         <section className="card">
           {loading && <p className="status">Loading…</p>}
           {error && <p className="status status--error">{error}</p>}
-          {!loading && !error && (
-            <p className="count">{transactions.length} transactions</p>
-          )}
 
           {!loading && !error && transactions.length === 0 && (
             <p className="status">No transactions yet.</p>
           )}
 
           {!loading && !error && transactions.length > 0 && (
-            <table className="transactions">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th className="col-amount">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((t) => (
-                  <tr key={t.id}>
-                    <td>{t.date}</td>
-                    <td>
-                      <span className={`badge badge--${t.type}`}>{t.type}</span>
-                    </td>
-                    <td>{t.category}</td>
-                    <td>{t.description ?? "—"}</td>
-                    <td className={`col-amount amount--${t.type}`}>
-                      {formatAmount(t.amount, t.type)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <>
+              <TransactionFilters
+                filters={filters}
+                onChange={setFilters}
+                onClear={() => setFilters(EMPTY_FILTERS)}
+              />
+
+              <p className="count">
+                {visible.length === transactions.length
+                  ? `${transactions.length} transactions`
+                  : `${visible.length} of ${transactions.length} transactions`}
+              </p>
+
+              {visible.length === 0 ? (
+                <p className="status">No transactions match your filters.</p>
+              ) : (
+                <table className="transactions">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                      <th className="col-amount">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visible.map((t) => (
+                      <tr key={t.id}>
+                        <td>{t.date}</td>
+                        <td>
+                          <span className={`badge badge--${t.type}`}>
+                            {t.type}
+                          </span>
+                        </td>
+                        <td>{t.category}</td>
+                        <td>{t.description ?? "—"}</td>
+                        <td className={`col-amount amount--${t.type}`}>
+                          {formatAmount(t.amount, t.type)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
           )}
         </section>
       </main>
