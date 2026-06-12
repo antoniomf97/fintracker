@@ -1,7 +1,7 @@
 import datetime
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Numeric
+from sqlalchemy import ForeignKey, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -9,10 +9,14 @@ from app.database import Base
 
 class Category(Base):
     __tablename__ = "categories"
+    # A name is scoped to a transaction type, so "food" can exist for both expense
+    # and (hypothetically) income as distinct categories.
+    __table_args__ = (UniqueConstraint("name", "type", name="uq_category_name_type"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    # Saved the first time a transaction or recurring rule uses this name.
-    name: Mapped[str] = mapped_column(unique=True, index=True)
+    # Saved the first time a transaction or recurring rule uses this name+type.
+    name: Mapped[str] = mapped_column(index=True)
+    type: Mapped[str] = mapped_column(index=True)  # income/expense/savings
 
 
 class Transaction(Base):

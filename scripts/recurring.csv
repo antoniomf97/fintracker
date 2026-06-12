@@ -1,0 +1,4 @@
+type,category,amount,description,frequency,start_date,end_date,is_active
+income,salary,2500.00,Monthly salary,monthly,2026-01-01,,true
+expense,transport,75.00,Monthly transit pass,monthly,2026-01-01,,true
+expense,cleaning,40.00,Cleaning service,biweekly,2026-01-01,,true

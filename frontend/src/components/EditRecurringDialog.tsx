@@ -52,12 +52,25 @@ export function EditRecurringDialog({ rule, onClose, onSaved }: Props) {
   const category =
     categoryChoice === NEW_CATEGORY ? newCategory.trim() : categoryChoice;
 
-  // Always include the rule's current category so it stays selected even before
-  // the list loads or if it isn't stored yet.
-  const names = categories.map((c) => c.name);
-  const optionNames = names.includes(rule.category)
-    ? names
-    : [rule.category, ...names];
+  // Categories are scoped to a transaction type, so only show this type's options.
+  const typeCategoryNames = categories
+    .filter((c) => c.type === type)
+    .map((c) => c.name);
+  // Keep the current selection visible even before the list loads (e.g. the rule's
+  // own category on first render).
+  const optionNames =
+    categoryChoice &&
+    categoryChoice !== NEW_CATEGORY &&
+    !typeCategoryNames.includes(categoryChoice)
+      ? [categoryChoice, ...typeCategoryNames]
+      : typeCategoryNames;
+
+  function changeType(nextType: TransactionType) {
+    setType(nextType);
+    // A category picked for the previous type no longer applies.
+    setCategoryChoice("");
+    setNewCategory("");
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -101,7 +114,9 @@ export function EditRecurringDialog({ rule, onClose, onSaved }: Props) {
           <span>Type</span>
           <select
             value={type}
-            onChange={(event) => setType(event.target.value as TransactionType)}
+            onChange={(event) =>
+              changeType(event.target.value as TransactionType)
+            }
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
@@ -116,6 +131,9 @@ export function EditRecurringDialog({ rule, onClose, onSaved }: Props) {
             onChange={(event) => setCategoryChoice(event.target.value)}
             required
           >
+            <option value="" disabled>
+              Select a category
+            </option>
             {optionNames.map((name) => (
               <option key={name} value={name}>
                 {name}
