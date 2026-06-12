@@ -149,6 +149,11 @@
   font-weight: 600;
 }
 
+.amount--savings {
+  color: #2563eb;
+  font-weight: 600;
+}
+
 .badge {
   display: inline-block;
   padding: 0.15rem 0.6rem;
@@ -167,6 +172,11 @@
 .badge--expense {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.badge--savings {
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 /* Floating action button */

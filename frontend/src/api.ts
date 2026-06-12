@@ -8,6 +8,23 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
+// Prefer FastAPI's `detail` message (e.g. the savings limit error) over a generic
+// status string, falling back when the body isn't the expected JSON shape.
+async function errorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const body = await response.json();
+    if (typeof body?.detail === "string") {
+      return body.detail;
+    }
+  } catch {
+    // Body wasn't JSON — use the fallback below.
+  }
+  return fallback;
+}
+
 export async function fetchCategories(): Promise<Category[]> {
   const response = await fetch(`${API_BASE}/api/v1/categories`);
   if (!response.ok) {
@@ -33,7 +50,12 @@ export async function createTransaction(
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    throw new Error(`Failed to create transaction (${response.status})`);
+    throw new Error(
+      await errorMessage(
+        response,
+        `Failed to create transaction (${response.status})`,
+      ),
+    );
   }
   return response.json();
 }

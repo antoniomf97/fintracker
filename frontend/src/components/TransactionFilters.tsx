@@ -21,6 +21,7 @@ export function TransactionFilters({ filters, onChange, onClear }: Props) {
         <option value="all">All types</option>
         <option value="income">Income</option>
         <option value="expense">Expense</option>
+        <option value="savings">Savings</option>
       </select>
 
       <input

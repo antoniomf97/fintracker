@@ -105,6 +105,7 @@ export function EditRecurringDialog({ rule, onClose, onSaved }: Props) {
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
+            <option value="savings">Savings</option>
           </select>
         </label>
 
