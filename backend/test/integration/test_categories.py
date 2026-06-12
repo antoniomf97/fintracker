@@ -43,19 +43,30 @@ def test_categories_start_empty(client):
 
 
 def test_create_category(client):
-    response = client.post(BASE_URL, json={"name": "salary"})
+    response = client.post(BASE_URL, json={"name": "salary", "type": "income"})
     assert response.status_code == 201
-    assert response.json()["name"] == "salary"
+    body = response.json()
+    assert body["name"] == "salary"
+    assert body["type"] == "income"
 
 
 def test_create_category_is_idempotent(client):
-    first = client.post(BASE_URL, json={"name": "salary"}).json()
-    second = client.post(BASE_URL, json={"name": "salary"}).json()
+    first = client.post(BASE_URL, json={"name": "salary", "type": "income"}).json()
+    second = client.post(BASE_URL, json={"name": "salary", "type": "income"}).json()
     assert first["id"] == second["id"]
     assert len(client.get(BASE_URL).json()) == 1
 
 
-def test_creating_transaction_saves_its_category(client):
+def test_same_name_different_type_are_distinct(client):
+    client.post(BASE_URL, json={"name": "other", "type": "income"})
+    client.post(BASE_URL, json={"name": "other", "type": "expense"})
+
+    categories = client.get(BASE_URL).json()
+    assert {c["type"] for c in categories} == {"income", "expense"}
+    assert len(categories) == 2
+
+
+def test_creating_transaction_saves_its_category_with_type(client):
     payload = {
         "date": "2026-06-08",
         "type": "income",
@@ -64,8 +75,17 @@ def test_creating_transaction_saves_its_category(client):
     }
     assert client.post(TRANSACTIONS_URL, json=payload).status_code == 201
 
-    names = [c["name"] for c in client.get(BASE_URL).json()]
-    assert names == ["salary"]
+    categories = client.get(BASE_URL).json()
+    assert categories == [{"id": categories[0]["id"], "name": "salary", "type": "income"}]
+
+
+def test_list_categories_filtered_by_type(client):
+    client.post(BASE_URL, json={"name": "salary", "type": "income"})
+    client.post(BASE_URL, json={"name": "food", "type": "expense"})
+    client.post(BASE_URL, json={"name": "investment", "type": "savings"})
+
+    names = [c["name"] for c in client.get(BASE_URL, params={"type": "expense"}).json()]
+    assert names == ["food"]
 
 
 def test_repeated_category_stored_once_and_sorted(client):

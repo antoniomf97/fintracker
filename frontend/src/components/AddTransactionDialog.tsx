@@ -55,6 +55,16 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
   const category =
     categoryChoice === NEW_CATEGORY ? newCategory.trim() : categoryChoice;
 
+  // Categories are scoped to a transaction type, so only show this type's options.
+  const typeCategories = categories.filter((c) => c.type === type);
+
+  function changeType(nextType: TransactionType) {
+    setType(nextType);
+    // A category picked for the previous type no longer applies.
+    setCategoryChoice("");
+    setNewCategory("");
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -104,7 +114,9 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
         <span>Type</span>
         <select
           value={type}
-          onChange={(event) => setType(event.target.value as TransactionType)}
+          onChange={(event) =>
+            changeType(event.target.value as TransactionType)
+          }
         >
           <option value="expense">Expense</option>
           <option value="income">Income</option>
@@ -122,7 +134,7 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
           <option value="" disabled>
             Select a category
           </option>
-          {categories.map((c) => (
+          {typeCategories.map((c) => (
             <option key={c.id} value={c.name}>
               {c.name}
             </option>

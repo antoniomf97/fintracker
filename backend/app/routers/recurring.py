@@ -18,7 +18,7 @@ DbSession = Annotated[Session, Depends(get_db)]
 def create_recurring(payload: RecurringCreate, db: DbSession) -> RecurringTransaction:
     rule = RecurringTransaction(**payload.model_dump())
     db.add(rule)
-    ensure_category(db, rule.category)
+    ensure_category(db, rule.category, rule.type)
     db.commit()
     db.refresh(rule)
     return rule
@@ -56,7 +56,7 @@ def update_recurring(
         )
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(rule, key, value)
-    ensure_category(db, rule.category)
+    ensure_category(db, rule.category, rule.type)
     db.commit()
     db.refresh(rule)
     return rule

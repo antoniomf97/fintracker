@@ -43,12 +43,12 @@ def test_backfill_collects_categories_from_existing_rows(db):
 
     backfill_categories(db)
 
-    names = sorted(c.name for c in db.query(Category).all())
-    assert names == ["food", "salary"]
+    pairs = sorted((c.name, c.type) for c in db.query(Category).all())
+    assert pairs == [("food", "expense"), ("salary", "income")]
 
 
 def test_backfill_is_idempotent_and_does_not_duplicate(db):
-    db.add(Category(name="food"))
+    db.add(Category(name="food", type="expense"))
     db.add(
         Transaction(date=date(2026, 6, 8), type="expense", category="food", amount=Decimal("10.00"))
     )
@@ -56,4 +56,4 @@ def test_backfill_is_idempotent_and_does_not_duplicate(db):
 
     backfill_categories(db)
 
-    assert [c.name for c in db.query(Category).all()] == ["food"]
+    assert [(c.name, c.type) for c in db.query(Category).all()] == [("food", "expense")]
