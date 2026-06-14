@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { fetchTransactions } from "./api";
 import { AddTransactionDialog } from "./components/AddTransactionDialog";
 import { Analytics } from "./components/Analytics";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
+import { useResource } from "./hooks/useResource";
 import type { Filters, Transaction } from "./types";
 import "./App.css";
 
@@ -35,9 +36,12 @@ function applyFilters(
 }
 
 function App() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: transactions,
+    loading,
+    error,
+    reload: load,
+  } = useResource<Transaction[]>(fetchTransactions, []);
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
 
@@ -45,19 +49,6 @@ function App() {
     () => applyFilters(transactions, filters),
     [transactions, filters],
   );
-
-  const load = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    fetchTransactions()
-      .then(setTransactions)
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   return (
     <div className="page">
