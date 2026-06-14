@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 
 import { deleteRecurring, fetchRecurring, generateRecurring } from "../api";
+import { useResource } from "../hooks/useResource";
 import type { RecurringTransaction } from "../types";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EditRecurringDialog } from "./EditRecurringDialog";
@@ -11,25 +12,16 @@ interface Props {
 }
 
 export function RecurringPanel({ onClose, onChanged }: Props) {
-  const [rules, setRules] = useState<RecurringTransaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: rules,
+    loading,
+    error,
+    reload: load,
+    setError,
+  } = useResource<RecurringTransaction[]>(fetchRecurring, []);
   const [editing, setEditing] = useState<RecurringTransaction | null>(null);
   const [deleting, setDeleting] = useState<RecurringTransaction | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    fetchRecurring()
-      .then(setRules)
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   async function handleConfirmDelete() {
     if (!deleting) return;
