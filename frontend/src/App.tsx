@@ -3,13 +3,14 @@ import { useMemo, useState } from "react";
 import { fetchTransactions } from "./api";
 import { AddTransactionDialog } from "./components/AddTransactionDialog";
 import { Analytics } from "./components/Analytics";
+import { CategoriesPanel } from "./components/CategoriesPanel";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { useResource } from "./hooks/useResource";
 import type { Filters, Transaction } from "./types";
 import "./App.css";
 
-type Overlay = "add" | "recurring" | null;
+type Overlay = "add" | "recurring" | "categories" | null;
 
 const EMPTY_FILTERS: Filters = { type: "all", category: "", from: "", to: "" };
 
@@ -57,13 +58,22 @@ function App() {
           <h1 className="brand">Fintracker</h1>
           <p className="subtitle">Personal Finance Tracker</p>
         </div>
-        <button
-          type="button"
-          className="header__btn"
-          onClick={() => setOverlay("recurring")}
-        >
-          ↻ Recurring
-        </button>
+        <div className="header__actions">
+          <button
+            type="button"
+            className="header__btn"
+            onClick={() => setOverlay("categories")}
+          >
+            ☰ Categories
+          </button>
+          <button
+            type="button"
+            className="header__btn"
+            onClick={() => setOverlay("recurring")}
+          >
+            ↻ Recurring
+          </button>
+        </div>
       </header>
 
       <main className="container">
@@ -115,7 +125,18 @@ function App() {
                             {t.type}
                           </span>
                         </td>
-                        <td>{t.category}</td>
+                        <td>
+                          {t.category ? (
+                            t.category
+                          ) : (
+                            <span
+                              className="cat-flag"
+                              title="This category was deleted — pick a new one"
+                            >
+                              ⚠ Uncategorized
+                            </span>
+                          )}
+                        </td>
                         <td>{t.description ?? "—"}</td>
                         <td className={`col-amount amount--${t.type}`}>
                           {formatAmount(t.amount, t.type)}
@@ -151,6 +172,10 @@ function App() {
 
       {overlay === "recurring" && (
         <RecurringPanel onClose={() => setOverlay(null)} onChanged={load} />
+      )}
+
+      {overlay === "categories" && (
+        <CategoriesPanel onClose={() => setOverlay(null)} onChanged={load} />
       )}
     </div>
   );

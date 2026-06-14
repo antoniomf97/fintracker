@@ -11,7 +11,9 @@ Frequency = Literal["daily", "weekly", "biweekly", "monthly", "quarterly", "year
 
 class RecurringBase(BaseModel):
     type: TransactionType
-    category: str = Field(min_length=1)
+    # No min_length here: a rule can be left with a blank category after its category
+    # is deleted (it then needs re-categorizing). Creation tightens this below.
+    category: str
     amount: Decimal = Field(gt=0, decimal_places=2)
     description: str | None = None
     frequency: Frequency
@@ -21,7 +23,7 @@ class RecurringBase(BaseModel):
 
 
 class RecurringCreate(RecurringBase):
-    pass
+    category: str = Field(min_length=1)
 
 
 class RecurringUpdate(BaseModel):

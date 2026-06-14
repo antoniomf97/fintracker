@@ -102,7 +102,11 @@ SQLite file and letting it be recreated.
   currently bypass the check.
 - **Categories** ([`services/categories.py`](backend/app/services/categories.py)) —
   `ensure_category(name, type)` upserts a category whenever a transaction or rule is
-  saved, so the picklists grow with use.
+  saved, so the picklists grow with use. Because the category is denormalized onto
+  transactions and rules as a plain string, `rename_category` cascades the new name to
+  them, and `delete_category` blanks the name off them — leaving an empty "needs
+  categorizing" category that the UI flags. Blanking also keeps a delete durable, since
+  `backfill_categories` skips empty names and so won't resurrect it on the next startup.
 
 ## Frontend
 
@@ -115,7 +119,8 @@ api.ts                 Typed fetch wrappers around the REST API
 types.ts               Shared domain types
 hooks/useResource.ts   Generic load-on-mount + reload with loading/error state
 components/             Analytics, TransactionFilters, AddTransactionDialog,
-                        RecurringPanel, EditRecurringDialog, ConfirmDialog
+                        RecurringPanel, EditRecurringDialog, CategoriesPanel,
+                        ConfirmDialog
 ```
 
 ### Data flow

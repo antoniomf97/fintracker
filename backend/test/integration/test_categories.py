@@ -102,3 +102,113 @@ def test_repeated_category_stored_once_and_sorted(client):
 
     names = [c["name"] for c in client.get(BASE_URL).json()]
     assert names == ["food", "salary"]  # de-duplicated and ordered by name
+
+
+def test_rename_category_cascades_to_transactions(client):
+    client.post(
+        TRANSACTIONS_URL,
+        json={"date": "2026-06-08", "type": "expense", "category": "food", "amount": 10},
+    )
+    category = client.get(BASE_URL).json()[0]
+
+    response = client.patch(f"{BASE_URL}/{category['id']}", json={"name": "groceries"})
+    assert response.status_code == 200
+    assert response.json()["name"] == "groceries"
+
+    # The category list reflects the new name...
+    assert [c["name"] for c in client.get(BASE_URL).json()] == ["groceries"]
+    # ...and the existing transaction was relabeled, not left pointing at "food".
+    assert client.get(TRANSACTIONS_URL).json()[0]["category"] == "groceries"
+
+
+def test_rename_category_only_touches_matching_type(client):
+    client.post(BASE_URL, json={"name": "other", "type": "income"})
+    expense = client.post(BASE_URL, json={"name": "other", "type": "expense"}).json()
+
+    client.patch(f"{BASE_URL}/{expense['id']}", json={"name": "misc"})
+
+    categories = {(c["name"], c["type"]) for c in client.get(BASE_URL).json()}
+    assert categories == {("other", "income"), ("misc", "expense")}
+
+
+def test_rename_to_existing_name_conflicts(client):
+    client.post(BASE_URL, json={"name": "food", "type": "expense"})
+    rent = client.post(BASE_URL, json={"name": "rent", "type": "expense"}).json()
+
+    response = client.patch(f"{BASE_URL}/{rent['id']}", json={"name": "food"})
+    assert response.status_code == 409
+
+
+def test_rename_missing_category_is_404(client):
+    assert client.patch(f"{BASE_URL}/999", json={"name": "whatever"}).status_code == 404
+
+
+def test_delete_category_uncategorizes_its_transactions(client):
+    client.post(
+        TRANSACTIONS_URL,
+        json={"date": "2026-06-08", "type": "expense", "category": "food", "amount": 10},
+    )
+    category = client.get(BASE_URL).json()[0]
+
+    assert client.delete(f"{BASE_URL}/{category['id']}").status_code == 204
+
+    # The category is gone...
+    assert client.get(BASE_URL).json() == []
+    # ...and its transaction is left with a blank category (the "needs a category" state).
+    assert client.get(TRANSACTIONS_URL).json()[0]["category"] == ""
+
+
+def test_delete_category_is_durable_across_backfill(client):
+    """A deleted category must not be resurrected from the rows that referenced it."""
+    from app.database import get_db
+    from app.services.categories import backfill_categories
+
+    client.post(
+        TRANSACTIONS_URL,
+        json={"date": "2026-06-08", "type": "expense", "category": "food", "amount": 10},
+    )
+    category = client.get(BASE_URL).json()[0]
+    client.delete(f"{BASE_URL}/{category['id']}")
+
+    # Re-running the startup backfill should not bring "food" back.
+    db = next(app.dependency_overrides[get_db]())
+    try:
+        backfill_categories(db)
+    finally:
+        db.close()
+    assert client.get(BASE_URL).json() == []
+
+
+def test_delete_only_affects_matching_type(client):
+    income = client.post(BASE_URL, json={"name": "other", "type": "income"}).json()
+    client.post(BASE_URL, json={"name": "other", "type": "expense"})
+
+    client.delete(f"{BASE_URL}/{income['id']}")
+
+    remaining = client.get(BASE_URL).json()
+    assert [(c["name"], c["type"]) for c in remaining] == [("other", "expense")]
+
+
+def test_delete_category_uncategorizes_recurring_rules(client):
+    recurring_url = f"{settings.API_PREFIX}/recurring"
+    client.post(
+        recurring_url,
+        json={
+            "type": "expense",
+            "category": "gym",
+            "amount": 30,
+            "frequency": "monthly",
+            "start_date": "2026-01-01",
+        },
+    )
+    category = next(c for c in client.get(BASE_URL).json() if c["name"] == "gym")
+
+    assert client.delete(f"{BASE_URL}/{category['id']}").status_code == 204
+
+    # The rule survives but is left blank, and GET still validates (no min_length on read).
+    rules = client.get(recurring_url).json()
+    assert rules[0]["category"] == ""
+
+
+def test_delete_missing_category_is_404(client):
+    assert client.delete(f"{BASE_URL}/999").status_code == 404

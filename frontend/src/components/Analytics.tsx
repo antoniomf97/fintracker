@@ -84,7 +84,8 @@ function tint(hex: string, amount: number): string {
 }
 
 interface CategorySlice {
-  name: string;
+  name: string; // the raw category key ("" for uncategorized)
+  label: string; // what to display ("uncategorized" for the empty key)
   amount: number;
   color: string;
 }
@@ -104,6 +105,7 @@ function categorySlices(
   // Largest category keeps the tag's exact color; the rest are lighter tints of it.
   return sorted.map(([name, amount], i) => ({
     name,
+    label: name || "uncategorized",
     amount,
     color: tint(
       base,
@@ -276,7 +278,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                   </span>
                   <span className="breakdown__total" style={{ color }}>
                     {hovered
-                      ? `${hovered.name} ${euro(hovered.amount)} (${Math.round(
+                      ? `${hovered.label} ${euro(hovered.amount)} (${Math.round(
                           (hovered.amount / total) * 100,
                         )}%)`
                       : euro(total)}
@@ -292,7 +294,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                           width: `${(c.amount / total) * 100}%`,
                           background: c.color,
                         }}
-                        title={`${c.name}: ${euro(c.amount)}`}
+                        title={`${c.label}: ${euro(c.amount)}`}
                         onMouseEnter={() => setBarHover({ type, name: c.name })}
                         onMouseLeave={() => setBarHover(null)}
                       />
@@ -306,7 +308,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                     {slices.map((c) => (
                       <li key={c.name}>
                         <span className="dot" style={{ background: c.color }} />
-                        {c.name}
+                        {c.label}
                       </li>
                     ))}
                   </ul>
