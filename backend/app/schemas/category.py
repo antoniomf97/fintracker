@@ -8,6 +8,10 @@ class CategoryCreate(BaseModel):
     type: TransactionType
 
 
+class CategoryUpdate(BaseModel):
+    name: str = Field(min_length=1)
+
+
 class CategoryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

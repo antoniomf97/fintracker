@@ -13,6 +13,11 @@
   justify-content: space-between;
 }
 
+.header__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .header__btn {
   background: #fff;
   border: 1px solid #cbd5e1;
@@ -340,6 +345,20 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Flag for a transaction whose category was deleted — needs re-categorizing. */
+.cat-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #b45309;
+  background: #fef3c7;
+  border-radius: 6px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .amount--income {
   color: #16a34a;
   font-weight: 600;
@@ -648,6 +667,93 @@
 .icon-btn:hover {
   background: #f8fafc;
   border-color: #38a3e1;
+}
+
+/* Categories panel */
+.cat-group {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eef2f6;
+}
+
+.cat-group:first-of-type {
+  border-top: none;
+}
+
+.cat-group__empty {
+  margin: 0.5rem 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.cats {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+}
+
+.cat__name {
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.cat__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.cat__input:focus {
+  outline: none;
+  border-color: #38a3e1;
+  box-shadow: 0 0 0 3px rgba(56, 163, 225, 0.15);
+}
+
+.cat__actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.icon-btn--danger:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.cat__actions .btn {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.cat--adding {
+  margin-top: 0.4rem;
+}
+
+.cat-group__add {
+  margin-top: 0.4rem;
+  background: none;
+  border: none;
+  color: #38a3e1;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.cat-group__add:hover {
+  text-decoration: underline;
 }
 
 /* Centered modal (edit / confirm) — intentionally blocks while acting */

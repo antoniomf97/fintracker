@@ -4,6 +4,7 @@ import type {
   NewTransaction,
   RecurringTransaction,
   Transaction,
+  TransactionType,
 } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
@@ -31,6 +32,60 @@ export async function fetchCategories(): Promise<Category[]> {
     throw new Error(`Failed to load categories (${response.status})`);
   }
   return response.json();
+}
+
+export async function createCategory(
+  name: string,
+  type: TransactionType,
+): Promise<Category> {
+  const response = await fetch(`${API_BASE}/api/v1/categories`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, type }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      await errorMessage(
+        response,
+        `Failed to create category (${response.status})`,
+      ),
+    );
+  }
+  return response.json();
+}
+
+export async function updateCategory(
+  id: number,
+  name: string,
+): Promise<Category> {
+  const response = await fetch(`${API_BASE}/api/v1/categories/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      await errorMessage(
+        response,
+        `Failed to update category (${response.status})`,
+      ),
+    );
+  }
+  return response.json();
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/v1/categories/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error(
+      await errorMessage(
+        response,
+        `Failed to delete category (${response.status})`,
+      ),
+    );
+  }
 }
 
 export async function fetchTransactions(): Promise<Transaction[]> {

@@ -10,7 +10,9 @@ rules; and see where your money goes through a filterable analytics dashboard.
 
 - **Transactions** — income, expense, and savings entries with categories and dates.
 - **Type-scoped categories** — categories are saved as you use them and filtered by
-  transaction type (income categories for income, etc.).
+  transaction type (income categories for income, etc.); a Categories panel lets you
+  add, rename, or delete them. Renames cascade to existing entries, and deleting a
+  category flags the transactions that used it as needing re-categorization.
 - **Recurring rules** — daily/weekly/biweekly/monthly/quarterly/yearly schedules that
   materialize transactions up to today, without month-end date drift.
 - **Savings guardrail** — a savings entry can't exceed available money

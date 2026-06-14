@@ -10,13 +10,15 @@ TransactionType = Literal["income", "expense", "savings"]
 class TransactionBase(BaseModel):
     date: datetime.date
     type: TransactionType
-    category: str = Field(min_length=1)
+    # No min_length here: a transaction can be left with a blank category after its
+    # category is deleted (the "needs categorizing" state). Creation tightens this below.
+    category: str
     amount: Decimal = Field(gt=0, decimal_places=2)
     description: str | None = None
 
 
 class TransactionCreate(TransactionBase):
-    pass
+    category: str = Field(min_length=1)
 
 
 class TransactionUpdate(BaseModel):

@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.models import Category
-from app.schemas.category import CategoryCreate, CategoryRead
+from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
 from app.schemas.transaction import TransactionType
+from app.services.categories import delete_category, rename_category
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -33,3 +34,22 @@ def create_category(payload: CategoryCreate, db: DbSession) -> Category:
     db.commit()
     db.refresh(category)
     return category
+
+
+@router.patch("/{category_id}", response_model=CategoryRead)
+def update_category(category_id: int, payload: CategoryUpdate, db: DbSession) -> Category:
+    category = db.get(Category, category_id)
+    if category is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Category not found")
+    try:
+        return rename_category(db, category, payload.name)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
+
+
+@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_category(category_id: int, db: DbSession) -> None:
+    category = db.get(Category, category_id)
+    if category is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Category not found")
+    delete_category(db, category)
