@@ -119,8 +119,8 @@ api.ts                 Typed fetch wrappers around the REST API
 types.ts               Shared domain types
 hooks/useResource.ts   Generic load-on-mount + reload with loading/error state
 components/             Analytics, TransactionFilters, AddTransactionDialog,
-                        RecurringPanel, EditRecurringDialog, CategoriesPanel,
-                        ConfirmDialog
+                        EditTransactionDialog, RecurringPanel, EditRecurringDialog,
+                        CategoriesPanel, ConfirmDialog
 ```
 
 ### Data flow

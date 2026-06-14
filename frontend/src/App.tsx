@@ -4,6 +4,7 @@ import { fetchTransactions } from "./api";
 import { AddTransactionDialog } from "./components/AddTransactionDialog";
 import { Analytics } from "./components/Analytics";
 import { CategoriesPanel } from "./components/CategoriesPanel";
+import { EditTransactionDialog } from "./components/EditTransactionDialog";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { useResource } from "./hooks/useResource";
@@ -45,6 +46,7 @@ function App() {
   } = useResource<Transaction[]>(fetchTransactions, []);
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [editing, setEditing] = useState<Transaction | null>(null);
 
   const visible = useMemo(
     () => applyFilters(transactions, filters),
@@ -114,6 +116,7 @@ function App() {
                       <th>Category</th>
                       <th>Description</th>
                       <th className="col-amount">Amount</th>
+                      <th className="col-actions" aria-label="Actions" />
                     </tr>
                   </thead>
                   <tbody>
@@ -140,6 +143,17 @@ function App() {
                         <td>{t.description ?? "—"}</td>
                         <td className={`col-amount amount--${t.type}`}>
                           {formatAmount(t.amount, t.type)}
+                        </td>
+                        <td className="col-actions">
+                          <button
+                            type="button"
+                            className="icon-btn"
+                            onClick={() => setEditing(t)}
+                            aria-label={`Edit transaction from ${t.date}`}
+                            title="Edit"
+                          >
+                            ⚙
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -176,6 +190,17 @@ function App() {
 
       {overlay === "categories" && (
         <CategoriesPanel onClose={() => setOverlay(null)} onChanged={load} />
+      )}
+
+      {editing && (
+        <EditTransactionDialog
+          transaction={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            load();
+          }}
+        />
       )}
     </div>
   );

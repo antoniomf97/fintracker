@@ -115,6 +115,26 @@ export async function createTransaction(
   return response.json();
 }
 
+export async function updateTransaction(
+  id: number,
+  payload: Partial<NewTransaction>,
+): Promise<Transaction> {
+  const response = await fetch(`${API_BASE}/api/v1/transactions/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(
+      await errorMessage(
+        response,
+        `Failed to update transaction (${response.status})`,
+      ),
+    );
+  }
+  return response.json();
+}
+
 export async function fetchRecurring(): Promise<RecurringTransaction[]> {
   const response = await fetch(`${API_BASE}/api/v1/recurring`);
   if (!response.ok) {
