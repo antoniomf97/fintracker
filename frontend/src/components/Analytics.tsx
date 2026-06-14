@@ -115,7 +115,7 @@ function categorySlices(
 }
 
 export function Analytics({ transactions }: { transactions: Transaction[] }) {
-  const [rangeKey, setRangeKey] = useState<RangeKey>("all");
+  const [rangeKey, setRangeKey] = useState<RangeKey>("month");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [active, setActive] = useState<number | null>(null);

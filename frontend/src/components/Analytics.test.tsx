@@ -27,15 +27,27 @@ function balanceText(): string | null {
   return document.querySelector(".donut__balance")?.textContent ?? null;
 }
 
+function showAllTime(): void {
+  fireEvent.click(screen.getByRole("button", { name: "All time" }));
+}
+
 describe("Analytics", () => {
+  it("defaults to 'This month', which excludes older data", () => {
+    render(<Analytics transactions={SAMPLE} />);
+    // The sample is dated 2020, so the default "This month" view is empty.
+    expect(balanceText()).toBe("€0.00");
+  });
+
   it("shows the balance (income - expenses - savings)", () => {
     render(<Analytics transactions={SAMPLE} />);
+    showAllTime();
     // 1200 - 400 - 100 = 700
     expect(balanceText()).toBe("€700.00");
   });
 
   it("totals each type's bar", () => {
     render(<Analytics transactions={SAMPLE} />);
+    showAllTime();
     expect(screen.getByText("€1200.00")).toBeInTheDocument(); // income
     expect(screen.getByText("€400.00")).toBeInTheDocument(); // expenses
     expect(screen.getByText("€100.00")).toBeInTheDocument(); // savings
@@ -49,13 +61,12 @@ describe("Analytics", () => {
     expect(within(legend).getByText("Savings")).toBeInTheDocument();
   });
 
-  it("recomputes when a time range excludes the data", () => {
+  it("recomputes when the time range changes", () => {
     render(<Analytics transactions={SAMPLE} />);
-    expect(screen.getByText("€700.00")).toBeInTheDocument();
-
-    // The sample is dated 2020, so "This month" filters it all out.
-    fireEvent.click(screen.getByRole("button", { name: "This month" }));
-
+    // Default "This month" excludes the 2020 sample...
     expect(balanceText()).toBe("€0.00");
+    // ...and "All time" brings it back.
+    showAllTime();
+    expect(balanceText()).toBe("€700.00");
   });
 });

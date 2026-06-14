@@ -345,6 +345,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Per-row actions (edit cogwheel), kept tight against the right edge. */
+.col-actions {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
 /* Flag for a transaction whose category was deleted — needs re-categorizing. */
 .cat-flag {
   display: inline-flex;

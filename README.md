@@ -8,7 +8,8 @@ rules; and see where your money goes through a filterable analytics dashboard.
 
 ## Features
 
-- **Transactions** — income, expense, and savings entries with categories and dates.
+- **Transactions** — income, expense, and savings entries with categories and dates;
+  edit any entry from the table via its ⚙ button.
 - **Type-scoped categories** — categories are saved as you use them and filtered by
   transaction type (income categories for income, etc.); a Categories panel lets you
   add, rename, or delete them. Renames cascade to existing entries, and deleting a
