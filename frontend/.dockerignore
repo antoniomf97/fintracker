@@ -1,0 +1,13 @@
+# Installed and built locally — regenerated inside the image.
+node_modules
+dist
+
+# Caches, coverage, logs, and editor/test noise.
+coverage
+.vite
+*.log
+.dockerignore
+
+# Local env overrides — keep build inputs explicit via build args.
+.env
+.env.*

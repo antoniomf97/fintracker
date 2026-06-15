@@ -62,6 +62,26 @@ The two default ports matter: the frontend calls the API at `http://localhost:80
 and the backend's CORS only allows `http://localhost:5173`. Override the API URL with
 the `VITE_API_URL` env var if needed.
 
+### Run with Docker
+
+Build and start the whole stack with [Docker Compose](https://docs.docker.com/compose/):
+
+```bash
+docker compose up --build
+```
+
+This builds the FastAPI backend (served by uvicorn) and the frontend (built with Vite
+and served by nginx), then exposes:
+
+- **App** → http://localhost:8080
+- **API** → http://localhost:8000 (docs at `/docs`)
+
+The SQLite database is persisted in the `backend-data` volume across restarts. Because
+Vite inlines `VITE_API_URL` at build time, the API URL is set via a build arg in
+[`docker-compose.yml`](docker-compose.yml) (defaulting to `http://localhost:8000`); the
+backend's `CORS_ORIGINS` is set there to match the frontend's `http://localhost:8080`
+origin. Adjust both together if you publish on different hosts or ports.
+
 ### Seed sample data (optional)
 
 With the backend running, populate it from the CSVs in [`scripts/`](scripts/):
