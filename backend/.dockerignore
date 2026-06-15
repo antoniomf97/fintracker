@@ -1,0 +1,15 @@
+# Local virtualenv and caches — rebuilt inside the image.
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+
+# Local SQLite database and secrets — never bake these into the image.
+data
+.env
+
+# Tests and tooling not needed at runtime.
+test
+.dockerignore
+.gitignore
