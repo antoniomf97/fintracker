@@ -27,7 +27,8 @@ FastAPI app under [`backend/app/`](backend/app/), organized in layers:
 
 ```
 main.py            App factory: CORS, lifespan (init DB + backfill), router mounting
-core/config.py     Settings (project name, API prefix, DB URL, CORS origins)
+core/config.py     Settings (project name, API prefix, DB URL, CORS origins, auth)
+core/security.py   Password check + JWT issue/verify; the require_auth dependency
 database.py        Engine/session, Base, get_db dependency, init_db()
 models/            ORM models (the database schema)
 schemas/           Pydantic request/response models (validation + serialization)
@@ -42,6 +43,15 @@ The REST API lives under `/api/v1` (health is unprefixed at `/health`). The full
 always-current reference is the auto-generated OpenAPI UI at **`/docs`** — rather than
 duplicate it here, just note the one non-obvious route:
 `POST /api/v1/recurring/generate` materializes all due recurring occurrences on demand.
+
+### Authentication
+
+Single-user auth. `POST /api/v1/auth/login` checks the configured credentials
+(`AUTH_USERNAME` + bcrypt `AUTH_PASSWORD_HASH`) and returns a signed JWT; the
+`require_auth` dependency ([`core/security.py`](backend/app/core/security.py)) guards the
+transactions, categories, and recurring routers (health and login stay public). The SPA
+stores the token and sends it as `Authorization: Bearer …`; a 401 clears it and returns to
+the login screen. Set `JWT_SECRET` and `AUTH_PASSWORD_HASH` as real secrets in production.
 
 ### Data model
 
@@ -157,7 +167,8 @@ every pull request.
 
 ## Conventions & decisions
 
-- **No auth / single user** — the app is local-first; no login or per-user data.
+- **Single-user auth** — one credential set (from env); a JWT guards the API. No
+  multi-user accounts, registration, or per-user data scoping.
 - **No migrations** — `create_all` on startup; recreate the dev DB on schema changes.
 - **Decimal as string** over the wire to avoid float rounding.
 - **Thin routers, logic in services** so behavior is unit-testable without HTTP.

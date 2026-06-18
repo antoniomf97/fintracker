@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.config import settings
+from app.core.security import require_auth
 from app.database import Base, get_db
 from app.main import app
 from app.models.models import Category  # noqa: F401  (registers table on Base.metadata)
@@ -32,6 +33,7 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[require_auth] = lambda: "test-user"
     yield TestClient(app)
     app.dependency_overrides.clear()
 

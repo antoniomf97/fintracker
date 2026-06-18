@@ -27,6 +27,9 @@ services:
       # The browser loads the app from the frontend's published port, so the API
       # must allow that origin (CORS_ORIGINS is parsed as a JSON list).
       CORS_ORIGINS: '["http://localhost:8080"]'
+      # Auth: dev defaults (admin / devpassword) come from the app config. In
+      # production set a real JWT_SECRET and AUTH_PASSWORD_HASH as host secrets.
+      JWT_SECRET: dev-secret-change-me-in-production-please-32+chars
     ports:
       - "8000:8000"
     depends_on:

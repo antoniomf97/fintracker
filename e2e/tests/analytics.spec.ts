@@ -1,10 +1,11 @@
-import { expect, test } from "@playwright/test";
+import { apiLogin, authHeaders, expect, test } from "./helpers";
 
 const API = "http://localhost:8000/api/v1";
 
 // Seed one of each type via the API so the analytics card has something to render.
 // (Income is created first so the savings entry passes the available-funds check.)
 test.beforeAll(async ({ request }) => {
+  const token = await apiLogin(request);
   const date = new Date().toISOString().slice(0, 10);
   const entries = [
     { type: "income", category: "e2e-salary", amount: "2000.00" },
@@ -14,6 +15,7 @@ test.beforeAll(async ({ request }) => {
   for (const entry of entries) {
     const response = await request.post(`${API}/transactions`, {
       data: { date, description: null, ...entry },
+      headers: authHeaders(token),
     });
     expect(response.ok()).toBeTruthy();
   }

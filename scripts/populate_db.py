@@ -8,11 +8,15 @@ library, so it stays decoupled from the backend code and its dependencies.
 Recurring rules are created and generated before the one-off transactions so that
 the salary income exists when savings transactions are validated against it.
 
+The API requires a login; the script authenticates first (defaulting to the dev
+credentials, override with ``--username``/``--password``).
+
 Start the backend first, then run:
 
     python scripts/populate_db.py
     python scripts/populate_db.py --api-url http://localhost:8000
     python scripts/populate_db.py --reset    # wipe existing data first
+    python scripts/populate_db.py --username admin --password secret
 """
 
 import argparse
@@ -61,26 +65,37 @@ def load_recurring() -> list[dict]:
         ]
 
 
-def _request(method: str, url: str, payload: dict | None = None):
+def _request(method: str, url: str, payload: dict | None = None, token: str | None = None):
     data = json.dumps(payload).encode("utf-8") if payload is not None else None
     headers = {"Content-Type": "application/json"} if payload is not None else {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(url, data=data, headers=headers, method=method)
     return urllib.request.urlopen(request, timeout=TIMEOUT)
 
 
-def _delete_all(api_url: str, resource: str) -> int:
-    with _request("GET", f"{api_url}/api/v1/{resource}") as response:
+def login(api_url: str, username: str, password: str) -> str:
+    payload = {"username": username, "password": password}
+    try:
+        with _request("POST", f"{api_url}/api/v1/auth/login", payload) as response:
+            return json.load(response)["access_token"]
+    except urllib.error.HTTPError as err:
+        raise SystemExit(f"Login failed: {err.code} {_detail(err)}") from err
+
+
+def _delete_all(api_url: str, resource: str, token: str) -> int:
+    with _request("GET", f"{api_url}/api/v1/{resource}", token=token) as response:
         existing = json.load(response)
     for item in existing:
-        _request("DELETE", f"{api_url}/api/v1/{resource}/{item['id']}").close()
+        _request("DELETE", f"{api_url}/api/v1/{resource}/{item['id']}", token=token).close()
     return len(existing)
 
 
-def _create_each(api_url: str, resource: str, rows: list[dict]) -> int:
+def _create_each(api_url: str, resource: str, rows: list[dict], token: str) -> int:
     created = 0
     for payload in rows:
         try:
-            _request("POST", f"{api_url}/api/v1/{resource}", payload).close()
+            _request("POST", f"{api_url}/api/v1/{resource}", payload, token=token).close()
             created += 1
         except urllib.error.HTTPError as err:
             label = f"{payload['type']}/{payload['category']} {payload['amount']}"
@@ -88,17 +103,18 @@ def _create_each(api_url: str, resource: str, rows: list[dict]) -> int:
     return created
 
 
-def populate(api_url: str, reset: bool) -> None:
+def populate(api_url: str, reset: bool, username: str, password: str) -> None:
     try:
+        token = login(api_url, username, password)
         if reset:
-            removed_tx = _delete_all(api_url, "transactions")
-            removed_rules = _delete_all(api_url, "recurring")
+            removed_tx = _delete_all(api_url, "transactions", token)
+            removed_rules = _delete_all(api_url, "recurring", token)
             print(f"Deleted {removed_tx} transactions and {removed_rules} recurring rules.")
 
-        rules = _create_each(api_url, "recurring", load_recurring())
-        with _request("POST", f"{api_url}/api/v1/recurring/generate") as response:
+        rules = _create_each(api_url, "recurring", load_recurring(), token)
+        with _request("POST", f"{api_url}/api/v1/recurring/generate", token=token) as response:
             generated = json.load(response)["created"]
-        transactions = _create_each(api_url, "transactions", load_transactions())
+        transactions = _create_each(api_url, "transactions", load_transactions(), token)
     except urllib.error.URLError as err:
         raise SystemExit(_unreachable(api_url, err)) from err
 
@@ -123,13 +139,15 @@ def _unreachable(api_url: str, err: urllib.error.URLError) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api-url", default=DEFAULT_API_URL, help="base URL of the running backend")
+    parser.add_argument("--username", default="admin", help="API login username")
+    parser.add_argument("--password", default="devpassword", help="API login password")
     parser.add_argument(
         "--reset",
         action="store_true",
         help="delete all existing transactions and recurring rules before inserting",
     )
     args = parser.parse_args()
-    populate(args.api_url, reset=args.reset)
+    populate(args.api_url, reset=args.reset, username=args.username, password=args.password)
 
 
 if __name__ == "__main__":

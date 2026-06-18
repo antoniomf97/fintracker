@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./helpers";
 
 // Unique so the assertions don't collide with data left by earlier runs.
 const CATEGORY = `e2e-${Date.now()}`;

@@ -94,6 +94,26 @@ backend's `CORS_ORIGINS` is set there to match the frontend's `http://localhost:
 origin. Adjust both together if you publish on different hosts or ports. In production
 `DATABASE_URL` points at a managed Postgres (e.g. Supabase).
 
+### Authentication
+
+The API requires a login (single user). The dev defaults are **`admin` / `devpassword`**
+— sign in with those locally. Credentials and the token signing key come from env vars:
+
+```bash
+AUTH_USERNAME=admin
+AUTH_PASSWORD_HASH='<bcrypt hash>'   # single-quote it; bcrypt hashes contain $
+JWT_SECRET='<long random string>'    # 32+ chars
+```
+
+Generate a password hash with:
+
+```bash
+python -c "import bcrypt; print(bcrypt.hashpw(b'YOURPASSWORD', bcrypt.gensalt()).decode())"
+```
+
+In production, set `AUTH_PASSWORD_HASH` and `JWT_SECRET` as secrets on the host (e.g.
+Render env vars) — never commit real values.
+
 ### Seed sample data (optional)
 
 With the backend running, populate it from the CSVs in [`scripts/`](scripts/):
