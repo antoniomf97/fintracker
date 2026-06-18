@@ -8,7 +8,7 @@ authentication or multi-tenancy.
 flowchart LR
     fe["frontend<br/>React + Vite · :5173"]
     be["backend<br/>FastAPI + SQLAlchemy · :8000"]
-    db[("SQLite")]
+    db[("Postgres")]
     e2e(["e2e · Playwright"])
 
     fe -- "HTTP / JSON" --> be
@@ -85,10 +85,16 @@ erDiagram
 
 ### Persistence
 
-SQLite via SQLAlchemy. On startup the lifespan handler calls `init_db()`
-(`create_all`) then `backfill_categories()` to seed the categories table from existing
-rows. There is **no migration tool** — in development, a schema change means deleting the
-SQLite file and letting it be recreated.
+SQLAlchemy over either **Postgres** or **SQLite**, chosen by the `DATABASE_URL` env var
+(`database.py` applies SQLite's `check_same_thread` arg only for SQLite, and
+`pool_pre_ping` otherwise). Local dev and production run Postgres (Supabase); SQLite is
+the no-server fallback (`sqlite:///./data/fintracker.db`). On startup the lifespan handler
+calls `init_db()` (`create_all`) then `backfill_categories()` to seed the categories table
+from existing rows.
+
+There is **no migration tool** yet — `create_all` only adds missing tables. On SQLite a
+schema change means deleting the file; on Postgres, adopt **Alembic** before changing the
+schema in production.
 
 ### Domain logic (services)
 

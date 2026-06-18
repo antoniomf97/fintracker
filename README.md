@@ -40,8 +40,19 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for how it all fits together.
 
 - [uv](https://docs.astral.sh/uv/) (Python 3.12 is provisioned automatically)
 - Node.js 22+
+- [Docker](https://docs.docker.com/) (for the local Postgres database)
 
 ### Run the app
+
+The backend talks to **Postgres** (matching production). Start a local one and point the
+backend at it via `.env`:
+
+```bash
+docker compose up -d db          # local Postgres on :5432 (repo root)
+cd backend && cp .env.example .env
+```
+
+> No Docker? Use the SQLite fallback instead: uncomment the `sqlite://` line in `.env`.
 
 Backend (http://localhost:8000, docs at `/docs`):
 
@@ -70,17 +81,18 @@ Build and start the whole stack with [Docker Compose](https://docs.docker.com/co
 docker compose up --build
 ```
 
-This builds the FastAPI backend (served by uvicorn) and the frontend (built with Vite
-and served by nginx), then exposes:
+This starts Postgres, the FastAPI backend (served by uvicorn), and the frontend (built
+with Vite and served by nginx), then exposes:
 
 - **App** → http://localhost:8080
 - **API** → http://localhost:8000 (docs at `/docs`)
 
-The SQLite database is persisted in the `backend-data` volume across restarts. Because
-Vite inlines `VITE_API_URL` at build time, the API URL is set via a build arg in
+The Postgres data is persisted in the `db-data` volume across restarts. Because Vite
+inlines `VITE_API_URL` at build time, the API URL is set via a build arg in
 [`docker-compose.yml`](docker-compose.yml) (defaulting to `http://localhost:8000`); the
 backend's `CORS_ORIGINS` is set there to match the frontend's `http://localhost:8080`
-origin. Adjust both together if you publish on different hosts or ports.
+origin. Adjust both together if you publish on different hosts or ports. In production
+`DATABASE_URL` points at a managed Postgres (e.g. Supabase).
 
 ### Seed sample data (optional)
 
