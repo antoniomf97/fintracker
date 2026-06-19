@@ -22,8 +22,11 @@ RUN mkdir -p data
 
 EXPOSE 8000
 
+# Bind the port the platform provides ($PORT, e.g. on Render), falling back to 8000 for
+# local docker-compose. Shell form is required so the variable is expanded at runtime.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health')"
 
-# `fastapi run` serves with uvicorn (no reload) bound to all interfaces.
-CMD ["uv", "run", "--frozen", "--no-dev", "fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
+# `fastapi run` serves with uvicorn (no reload) bound to all interfaces. `exec` makes the
+# server PID 1 so it receives SIGTERM directly for a clean shutdown.
+CMD exec uv run --frozen --no-dev fastapi run app/main.py --host 0.0.0.0 --port ${PORT:-8000}
