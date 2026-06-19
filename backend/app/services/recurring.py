@@ -58,6 +58,7 @@ def generate_for_rule(rule: RecurringTransaction, today: datetime.date) -> list[
         if rule.last_generated_date is None or occ > rule.last_generated_date:
             created.append(
                 Transaction(
+                    user_id=rule.user_id,
                     date=occ,
                     type=rule.type,
                     category=rule.category,
@@ -73,12 +74,12 @@ def generate_for_rule(rule: RecurringTransaction, today: datetime.date) -> list[
     return created
 
 
-def generate_due_transactions(db: Session, today: datetime.date | None = None) -> int:
-    """Materialize all due transactions for active rules. Returns the number created."""
+def generate_due_transactions(db: Session, user_id: int, today: datetime.date | None = None) -> int:
+    """Materialize a user's due transactions for active rules. Returns the number created."""
     if today is None:
         today = datetime.date.today()
 
-    rules = db.query(RecurringTransaction).filter_by(is_active=True).all()
+    rules = db.query(RecurringTransaction).filter_by(is_active=True, user_id=user_id).all()
     total = 0
     for rule in rules:
         new_transactions = generate_for_rule(rule, today)

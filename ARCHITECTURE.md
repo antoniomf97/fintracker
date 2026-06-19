@@ -27,7 +27,8 @@ FastAPI app under [`backend/app/`](backend/app/), organized in layers:
 
 ```
 main.py            App factory: CORS, lifespan (init DB + backfill), router mounting
-core/config.py     Settings (project name, API prefix, DB URL, CORS origins)
+core/config.py     Settings (project name, API prefix, DB URL, CORS origins, auth)
+core/security.py   Password check + JWT issue/verify; the require_auth dependency
 database.py        Engine/session, Base, get_db dependency, init_db()
 models/            ORM models (the database schema)
 schemas/           Pydantic request/response models (validation + serialization)
@@ -43,13 +44,33 @@ always-current reference is the auto-generated OpenAPI UI at **`/docs`** — rat
 duplicate it here, just note the one non-obvious route:
 `POST /api/v1/recurring/generate` materializes all due recurring occurrences on demand.
 
+### Authentication
+
+Multi-user. `POST /api/v1/auth/signup` creates an account (bcrypt-hashed password) and
+`POST /api/v1/auth/login` verifies it; both return a signed JWT whose subject is the user
+id. The `get_current_user` dependency ([`core/security.py`](backend/app/core/security.py))
+resolves the bearer token to a `User`; every data route depends on it and **scopes its
+queries to that user** (health and auth stay public). The SPA stores the token and sends it
+as `Authorization: Bearer …`; a 401 clears it and returns to the login screen. Accounts
+live in the database — only `JWT_SECRET` is configured via env (set a real one in prod).
+
 ### Data model
 
 ```mermaid
 erDiagram
+    USER ||--o{ TRANSACTION : owns
+    USER ||--o{ RECURRING_TRANSACTION : owns
+    USER ||--o{ CATEGORY : owns
     RECURRING_TRANSACTION ||--o{ TRANSACTION : "generates (nullable FK)"
+    USER {
+        int id PK
+        string username UK
+        string password_hash
+        datetime created_at
+    }
     TRANSACTION {
         int id PK
+        int user_id FK
         date date
         string type
         string category
@@ -59,6 +80,7 @@ erDiagram
     }
     RECURRING_TRANSACTION {
         int id PK
+        int user_id FK
         string type
         string category
         decimal amount
@@ -70,18 +92,21 @@ erDiagram
     }
     CATEGORY {
         int id PK
+        int user_id FK
         string name
         string type
     }
 ```
 
+- Every transaction, recurring rule, and category belongs to a `User` (`user_id` FK); all
+  queries are scoped to the authenticated user.
 - Amounts are `Numeric(12,2)` and serialized to JSON as **strings** to preserve decimal
   precision; the frontend keeps them as strings until formatting.
 - `Transaction.recurring_id` links a generated transaction to its rule (null for manual
   entries). Deleting a rule **unlinks** its transactions (sets the FK to null) rather
   than cascading.
-- A category is unique per `(name, type)`, so "other" can exist independently for both
-  income and expense.
+- A category is unique per `(user_id, name, type)`, so each user has independent
+  categories and "other" can exist for both income and expense.
 
 ### Persistence
 
@@ -157,7 +182,8 @@ every pull request.
 
 ## Conventions & decisions
 
-- **No auth / single user** — the app is local-first; no login or per-user data.
+- **Multi-user auth** — accounts in the DB (open signup); a JWT (subject = user id) guards
+  the API, and every data query is scoped to the current user.
 - **No migrations** — `create_all` on startup; recreate the dev DB on schema changes.
 - **Decimal as string** over the wire to avoid float rounding.
 - **Thin routers, logic in services** so behavior is unit-testable without HTTP.

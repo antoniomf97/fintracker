@@ -7,6 +7,8 @@ import App from "./App";
 vi.mock("./api");
 
 beforeEach(() => {
+  // A stored token makes App render the dashboard instead of the login page.
+  vi.mocked(api.getToken).mockReturnValue("test-token");
   vi.mocked(api.fetchTransactions).mockResolvedValue([
     {
       id: 1,

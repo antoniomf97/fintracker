@@ -14,5 +14,11 @@ class Settings(BaseSettings):
     # Origins allowed to call the API from a browser (Vite dev server by default).
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
+    # Auth. Accounts live in the database (see /auth/signup); only the JWT signing
+    # config is here. Production MUST override JWT_SECRET via an environment variable.
+    JWT_SECRET: str = "dev-secret-change-me-in-production-please-32+chars"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # one week
+
 
 settings = Settings()

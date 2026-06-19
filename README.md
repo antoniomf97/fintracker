@@ -94,6 +94,21 @@ backend's `CORS_ORIGINS` is set there to match the frontend's `http://localhost:
 origin. Adjust both together if you publish on different hosts or ports. In production
 `DATABASE_URL` points at a managed Postgres (e.g. Supabase).
 
+### Authentication
+
+The app is multi-user: create an account from the **Sign up** screen, then log in. Each
+account's transactions, categories, and recurring rules are private to it. Signup is open,
+so anyone who can reach the API can register.
+
+Accounts live in the database; the only auth env var is the JWT signing key:
+
+```bash
+JWT_SECRET=<long random string, 32+ chars>
+```
+
+In production, set `JWT_SECRET` as a secret on the host (e.g. a Render env var) — never
+commit a real value.
+
 ### Seed sample data (optional)
 
 With the backend running, populate it from the CSVs in [`scripts/`](scripts/):

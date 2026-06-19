@@ -1,10 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { fetchTransactions } from "./api";
+import {
+  clearToken,
+  fetchTransactions,
+  getToken,
+  setUnauthorizedHandler,
+} from "./api";
 import { AddTransactionDialog } from "./components/AddTransactionDialog";
 import { Analytics } from "./components/Analytics";
 import { CategoriesPanel } from "./components/CategoriesPanel";
 import { EditTransactionDialog } from "./components/EditTransactionDialog";
+import { LoginPage } from "./components/LoginPage";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { useResource } from "./hooks/useResource";
@@ -37,7 +43,7 @@ function applyFilters(
   });
 }
 
-function App() {
+function Dashboard({ onLogout }: { onLogout: () => void }) {
   const {
     data: transactions,
     loading,
@@ -74,6 +80,9 @@ function App() {
             onClick={() => setOverlay("recurring")}
           >
             ↻ Recurring
+          </button>
+          <button type="button" className="header__btn" onClick={onLogout}>
+            ⎋ Logout
           </button>
         </div>
       </header>
@@ -204,6 +213,26 @@ function App() {
       )}
     </div>
   );
+}
+
+function App() {
+  const [token, setToken] = useState<string | null>(getToken());
+
+  useEffect(() => {
+    // A 401 from any API call clears the stored token and bounces back to login.
+    setUnauthorizedHandler(() => setToken(null));
+    return () => setUnauthorizedHandler(null);
+  }, []);
+
+  function handleLogout() {
+    clearToken();
+    setToken(null);
+  }
+
+  if (!token) {
+    return <LoginPage onLoggedIn={setToken} />;
+  }
+  return <Dashboard onLogout={handleLogout} />;
 }
 
 export default App;
