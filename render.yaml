@@ -1,0 +1,24 @@
+# Render Blueprint for the fintracker backend.
+# Render builds the Docker image in backend/ and injects $PORT, which the Dockerfile
+# CMD binds. Secrets (sync: false) are NOT stored here — set their values in the Render
+# dashboard so they never land in git. The frontend is deployed separately on Netlify.
+services:
+  - type: web
+    name: fintracker-backend
+    runtime: docker
+    rootDir: backend # Docker build context + Dockerfile path resolve from here
+    plan: free
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # Supabase session pooler string, with the +psycopg scheme:
+      #   postgresql+psycopg://postgres.<ref>:<password>@<host>.pooler.supabase.com:5432/postgres
+      - key: DATABASE_URL
+        sync: false
+      # A long random secret (32+ chars). Generate one, e.g. `openssl rand -hex 32`.
+      - key: JWT_SECRET
+        sync: false
+      # JSON array of allowed browser origins — set to the Netlify URL once it exists,
+      # e.g. ["https://your-site.netlify.app"]. Must be valid JSON even for one origin.
+      - key: CORS_ORIGINS
+        sync: false
