@@ -1,24 +1,47 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
-from app.core.security import create_access_token, require_auth, verify_credentials
-from app.schemas.auth import LoginRequest, TokenResponse
+from app.core.security import (
+    create_access_token,
+    get_current_user,
+    hash_password,
+    verify_password,
+)
+from app.database import get_db
+from app.models.models import User
+from app.schemas.auth import LoginRequest, SignupRequest, TokenResponse, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+DbSession = Annotated[Session, Depends(get_db)]
+
+
+@router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+def signup(payload: SignupRequest, db: DbSession) -> TokenResponse:
+    username = payload.username.strip()
+    if db.query(User).filter_by(username=username).first() is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "That username is taken")
+    user = User(username=username, password_hash=hash_password(payload.password))
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    # Auto-login: hand back a token so the new account is signed in immediately.
+    return TokenResponse(access_token=create_access_token(str(user.id)))
+
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest) -> TokenResponse:
-    if not verify_credentials(payload.username, payload.password):
+def login(payload: LoginRequest, db: DbSession) -> TokenResponse:
+    user = db.query(User).filter_by(username=payload.username.strip()).first()
+    if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    return TokenResponse(access_token=create_access_token(payload.username))
+    return TokenResponse(access_token=create_access_token(str(user.id)))
 
 
-@router.get("/me")
-def me(subject: Annotated[str, Depends(require_auth)]) -> dict[str, str]:
-    """Echo the authenticated user — lets the SPA validate a stored token on load."""
-    return {"username": subject}
+@router.get("/me", response_model=UserRead)
+def me(user: Annotated[User, Depends(get_current_user)]) -> User:
+    return user

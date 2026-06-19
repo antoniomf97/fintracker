@@ -1,11 +1,11 @@
-import { apiLogin, authHeaders, expect, test } from "./helpers";
+import { authHeaders, expect, signupOrLogin, test } from "./helpers";
 
 const API = "http://localhost:8000/api/v1";
 
 // Seed one of each type via the API so the analytics card has something to render.
 // (Income is created first so the savings entry passes the available-funds check.)
 test.beforeAll(async ({ request }) => {
-  const token = await apiLogin(request);
+  const token = await signupOrLogin(request);
   const date = new Date().toISOString().slice(0, 10);
   const entries = [
     { type: "income", category: "e2e-salary", amount: "2000.00" },

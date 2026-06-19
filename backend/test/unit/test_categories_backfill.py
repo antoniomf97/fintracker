@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.database import Base
-from app.models.models import Category, RecurringTransaction, Transaction
+from app.models.models import Category, RecurringTransaction, Transaction, User
 from app.services.categories import backfill_categories
 
 
@@ -26,12 +26,28 @@ def db():
         session.close()
 
 
+def _user(db) -> User:
+    user = User(username="u", password_hash="x")
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 def test_backfill_collects_categories_from_existing_rows(db):
+    user = _user(db)
     db.add(
-        Transaction(date=date(2026, 6, 8), type="expense", category="food", amount=Decimal("10.00"))
+        Transaction(
+            user_id=user.id,
+            date=date(2026, 6, 8),
+            type="expense",
+            category="food",
+            amount=Decimal("10.00"),
+        )
     )
     db.add(
         RecurringTransaction(
+            user_id=user.id,
             type="income",
             category="salary",
             amount=Decimal("1000.00"),
@@ -48,9 +64,16 @@ def test_backfill_collects_categories_from_existing_rows(db):
 
 
 def test_backfill_is_idempotent_and_does_not_duplicate(db):
-    db.add(Category(name="food", type="expense"))
+    user = _user(db)
+    db.add(Category(user_id=user.id, name="food", type="expense"))
     db.add(
-        Transaction(date=date(2026, 6, 8), type="expense", category="food", amount=Decimal("10.00"))
+        Transaction(
+            user_id=user.id,
+            date=date(2026, 6, 8),
+            type="expense",
+            category="food",
+            amount=Decimal("10.00"),
+        )
     )
     db.commit()
 

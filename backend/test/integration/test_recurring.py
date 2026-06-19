@@ -7,10 +7,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.config import settings
-from app.core.security import require_auth
+from app.core.security import get_current_user
 from app.database import Base, get_db
 from app.main import app
 from app.models import models  # noqa: F401  (registers tables on Base.metadata)
+from app.models.models import User
 
 RECURRING_URL = f"{settings.API_PREFIX}/recurring"
 TRANSACTIONS_URL = f"{settings.API_PREFIX}/transactions"
@@ -26,6 +27,13 @@ def client():
     Base.metadata.create_all(bind=engine)
     testing_session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
+    seed = testing_session()
+    user = User(username="tester", password_hash="x")
+    seed.add(user)
+    seed.commit()
+    seed.refresh(user)
+    seed.close()
+
     def override_get_db():
         db = testing_session()
         try:
@@ -34,7 +42,7 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[require_auth] = lambda: "test-user"
+    app.dependency_overrides[get_current_user] = lambda: user
     yield TestClient(app)
     app.dependency_overrides.clear()
 

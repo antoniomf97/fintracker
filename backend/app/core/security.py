@@ -1,36 +1,39 @@
-"""Single-user authentication: password verification and JWT issue/verify.
+"""Authentication: password hashing and JWT issue/verify.
 
-The app has one set of credentials (from settings). Login checks them and mints a
-signed JWT; protected routes depend on ``require_auth`` to validate the bearer token.
-Settings are read at call time so tests can monkeypatch them.
+Accounts live in the database. Signup hashes the password; login verifies it and mints
+a JWT whose subject is the user's id. Protected routes depend on ``get_current_user`` to
+resolve the bearer token to a ``User``. Settings are read at call time so tests can
+monkeypatch them.
 """
 
 import datetime
-import secrets
 from typing import Annotated
 
 import bcrypt
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.database import get_db
+from app.models.models import User
 
 # auto_error=False so a missing/blank header yields our own 401 (HTTPBearer's default
 # is 403); the frontend triggers logout specifically on 401.
 _bearer = HTTPBearer(auto_error=False)
 
 
-def verify_credentials(username: str, password: str) -> bool:
-    """True if the username and password match the configured single user."""
-    username_ok = secrets.compare_digest(username, settings.AUTH_USERNAME)
-    password_ok = bcrypt.checkpw(password.encode(), settings.AUTH_PASSWORD_HASH.encode())
-    # Check both regardless of the username result to keep timing uniform.
-    return username_ok and password_ok
+def hash_password(plain: str) -> str:
+    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 def create_access_token(subject: str) -> str:
-    """Sign a JWT for ``subject`` that expires after the configured window."""
+    """Sign a JWT for ``subject`` (the user id) that expires after the configured window."""
     now = datetime.datetime.now(datetime.UTC)
     payload = {
         "sub": subject,
@@ -40,10 +43,11 @@ def create_access_token(subject: str) -> str:
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
-def require_auth(
+def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
-) -> str:
-    """Validate the bearer token and return its subject, or raise 401."""
+    db: Annotated[Session, Depends(get_db)],
+) -> User:
+    """Resolve the bearer token to the current ``User``, or raise 401."""
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Not authenticated",
@@ -57,9 +61,10 @@ def require_auth(
             settings.JWT_SECRET,
             algorithms=[settings.JWT_ALGORITHM],
         )
-    except jwt.PyJWTError as exc:
+        user_id = int(payload["sub"])
+    except (jwt.PyJWTError, KeyError, ValueError) as exc:
         raise unauthorized from exc
-    subject = payload.get("sub")
-    if not subject:
+    user = db.get(User, user_id)
+    if user is None:
         raise unauthorized
-    return subject
+    return user

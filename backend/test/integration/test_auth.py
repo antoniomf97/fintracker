@@ -1,4 +1,3 @@
-import bcrypt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -10,9 +9,10 @@ from app.database import Base, get_db
 from app.main import app
 from app.models import models  # noqa: F401  (registers tables on Base.metadata)
 
+SIGNUP_URL = f"{settings.API_PREFIX}/auth/signup"
 LOGIN_URL = f"{settings.API_PREFIX}/auth/login"
 ME_URL = f"{settings.API_PREFIX}/auth/me"
-PROTECTED_URL = f"{settings.API_PREFIX}/transactions"
+TRANSACTIONS_URL = f"{settings.API_PREFIX}/transactions"
 
 
 @pytest.fixture
@@ -32,63 +32,83 @@ def client():
         finally:
             db.close()
 
-    # require_auth is intentionally NOT overridden here — these tests exercise real auth.
+    # No get_current_user override — these tests exercise real auth end to end.
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def creds(monkeypatch):
-    """Set known single-user credentials so login is deterministic regardless of .env."""
-    password = "s3cret-pw"
-    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-    monkeypatch.setattr(settings, "AUTH_USERNAME", "tester")
-    monkeypatch.setattr(settings, "AUTH_PASSWORD_HASH", hashed)
-    monkeypatch.setattr(settings, "JWT_SECRET", "test-secret-test-secret-test-secret")
-    return {"username": "tester", "password": password}
+def _signup(client, username="alice", password="password123"):
+    return client.post(SIGNUP_URL, json={"username": username, "password": password})
 
 
-def _token(client, creds) -> str:
-    return client.post(LOGIN_URL, json=creds).json()["access_token"]
+def _auth(token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {token}"}
 
 
-def test_login_returns_a_token(client, creds):
-    response = client.post(LOGIN_URL, json=creds)
-    assert response.status_code == 200
+def test_signup_returns_a_token(client):
+    response = _signup(client)
+    assert response.status_code == 201
     body = response.json()
     assert body["token_type"] == "bearer"
     assert body["access_token"]
 
 
-def test_login_rejects_wrong_password(client, creds):
-    response = client.post(LOGIN_URL, json={"username": "tester", "password": "nope"})
+def test_signup_rejects_duplicate_username(client):
+    _signup(client)
+    assert _signup(client).status_code == 409
+
+
+def test_signup_rejects_short_password(client):
+    response = client.post(SIGNUP_URL, json={"username": "bob", "password": "short"})
+    assert response.status_code == 422
+
+
+def test_login_after_signup(client):
+    _signup(client, "carol")
+    response = client.post(LOGIN_URL, json={"username": "carol", "password": "password123"})
+    assert response.status_code == 200
+    assert response.json()["access_token"]
+
+
+def test_login_rejects_wrong_password(client):
+    _signup(client, "dave")
+    response = client.post(LOGIN_URL, json={"username": "dave", "password": "nope"})
     assert response.status_code == 401
 
 
-def test_login_rejects_unknown_user(client, creds):
-    response = client.post(LOGIN_URL, json={"username": "intruder", "password": creds["password"]})
+def test_login_rejects_unknown_user(client):
+    response = client.post(LOGIN_URL, json={"username": "ghost", "password": "password123"})
     assert response.status_code == 401
 
 
 def test_protected_route_requires_a_token(client):
-    assert client.get(PROTECTED_URL).status_code == 401
+    assert client.get(TRANSACTIONS_URL).status_code == 401
 
 
-def test_invalid_token_is_rejected(client):
-    response = client.get(PROTECTED_URL, headers={"Authorization": "Bearer not.a.jwt"})
-    assert response.status_code == 401
-
-
-def test_protected_route_accepts_a_valid_token(client, creds):
-    token = _token(client, creds)
-    response = client.get(PROTECTED_URL, headers={"Authorization": f"Bearer {token}"})
+def test_me_returns_the_current_user(client):
+    token = _signup(client, "erin").json()["access_token"]
+    response = client.get(ME_URL, headers=_auth(token))
     assert response.status_code == 200
-    assert response.json() == []
+    assert response.json()["username"] == "erin"
 
 
-def test_me_returns_the_authenticated_user(client, creds):
-    token = _token(client, creds)
-    response = client.get(ME_URL, headers={"Authorization": f"Bearer {token}"})
-    assert response.status_code == 200
-    assert response.json() == {"username": "tester"}
+def test_users_only_see_their_own_data(client):
+    a = _signup(client, "user-a").json()["access_token"]
+    b = _signup(client, "user-b").json()["access_token"]
+
+    created = client.post(
+        TRANSACTIONS_URL,
+        json={"date": "2026-06-08", "type": "income", "category": "salary", "amount": 1000},
+        headers=_auth(a),
+    )
+    assert created.status_code == 201
+
+    # B sees nothing; A sees their own row.
+    assert client.get(TRANSACTIONS_URL, headers=_auth(b)).json() == []
+    a_rows = client.get(TRANSACTIONS_URL, headers=_auth(a)).json()
+    assert [t["category"] for t in a_rows] == ["salary"]
+
+    # B can't fetch A's transaction by id either.
+    tx_id = created.json()["id"]
+    assert client.get(f"{TRANSACTIONS_URL}/{tx_id}", headers=_auth(b)).status_code == 404

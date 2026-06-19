@@ -96,23 +96,18 @@ origin. Adjust both together if you publish on different hosts or ports. In prod
 
 ### Authentication
 
-The API requires a login (single user). The dev defaults are **`admin` / `devpassword`**
-— sign in with those locally. Credentials and the token signing key come from env vars:
+The app is multi-user: create an account from the **Sign up** screen, then log in. Each
+account's transactions, categories, and recurring rules are private to it. Signup is open,
+so anyone who can reach the API can register.
+
+Accounts live in the database; the only auth env var is the JWT signing key:
 
 ```bash
-AUTH_USERNAME=admin
-AUTH_PASSWORD_HASH='<bcrypt hash>'   # single-quote it; bcrypt hashes contain $
-JWT_SECRET='<long random string>'    # 32+ chars
+JWT_SECRET=<long random string, 32+ chars>
 ```
 
-Generate a password hash with:
-
-```bash
-python -c "import bcrypt; print(bcrypt.hashpw(b'YOURPASSWORD', bcrypt.gensalt()).decode())"
-```
-
-In production, set `AUTH_PASSWORD_HASH` and `JWT_SECRET` as secrets on the host (e.g.
-Render env vars) — never commit real values.
+In production, set `JWT_SECRET` as a secret on the host (e.g. a Render env var) — never
+commit a real value.
 
 ### Seed sample data (optional)
 

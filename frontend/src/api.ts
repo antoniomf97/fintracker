@@ -68,20 +68,36 @@ async function authFetch(
   return response;
 }
 
-// Login uses a plain fetch (no token yet, and a failed login shouldn't trigger the
-// global logout handler). On success the token is stored for subsequent authFetch calls.
+// Login and signup use a plain fetch (no token yet, and a failure shouldn't trigger
+// the global logout handler). On success the token is stored for later authFetch calls.
 export async function login(
   username: string,
   password: string,
 ): Promise<string> {
-  const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+  return authenticate("login", username, password);
+}
+
+export async function signup(
+  username: string,
+  password: string,
+): Promise<string> {
+  return authenticate("signup", username, password);
+}
+
+async function authenticate(
+  action: "login" | "signup",
+  username: string,
+  password: string,
+): Promise<string> {
+  const response = await fetch(`${API_BASE}/api/v1/auth/${action}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
   if (!response.ok) {
+    const fallback = action === "signup" ? "Sign up" : "Login";
     throw new Error(
-      await errorMessage(response, `Login failed (${response.status})`),
+      await errorMessage(response, `${fallback} failed (${response.status})`),
     );
   }
   const body: { access_token: string } = await response.json();

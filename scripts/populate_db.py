@@ -8,8 +8,8 @@ library, so it stays decoupled from the backend code and its dependencies.
 Recurring rules are created and generated before the one-off transactions so that
 the salary income exists when savings transactions are validated against it.
 
-The API requires a login; the script authenticates first (defaulting to the dev
-credentials, override with ``--username``/``--password``).
+The API requires an account; the script signs one up on first run (then logs in on
+later runs), defaulting to the dev credentials — override with ``--username``/``--password``.
 
 Start the backend first, then run:
 
@@ -74,8 +74,15 @@ def _request(method: str, url: str, payload: dict | None = None, token: str | No
     return urllib.request.urlopen(request, timeout=TIMEOUT)
 
 
-def login(api_url: str, username: str, password: str) -> str:
+def signup_or_login(api_url: str, username: str, password: str) -> str:
     payload = {"username": username, "password": password}
+    # Create the account on first run; if it already exists (409), log in instead.
+    try:
+        with _request("POST", f"{api_url}/api/v1/auth/signup", payload) as response:
+            return json.load(response)["access_token"]
+    except urllib.error.HTTPError as err:
+        if err.code != 409:
+            raise SystemExit(f"Signup failed: {err.code} {_detail(err)}") from err
     try:
         with _request("POST", f"{api_url}/api/v1/auth/login", payload) as response:
             return json.load(response)["access_token"]
@@ -105,7 +112,7 @@ def _create_each(api_url: str, resource: str, rows: list[dict], token: str) -> i
 
 def populate(api_url: str, reset: bool, username: str, password: str) -> None:
     try:
-        token = login(api_url, username, password)
+        token = signup_or_login(api_url, username, password)
         if reset:
             removed_tx = _delete_all(api_url, "transactions", token)
             removed_rules = _delete_all(api_url, "recurring", token)

@@ -3,8 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.security import get_current_user
 from app.database import get_db
-from app.models.models import Category
+from app.models.models import Category, User
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
 from app.schemas.transaction import TransactionType
 from app.services.categories import delete_category, rename_category
@@ -12,24 +13,27 @@ from app.services.categories import delete_category, rename_category
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 DbSession = Annotated[Session, Depends(get_db)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @router.get("", response_model=list[CategoryRead])
-def list_categories(db: DbSession, type: TransactionType | None = None) -> list[Category]:
-    query = db.query(Category)
+def list_categories(
+    db: DbSession, user: CurrentUser, type: TransactionType | None = None
+) -> list[Category]:
+    query = db.query(Category).filter_by(user_id=user.id)
     if type is not None:
         query = query.filter(Category.type == type)
     return query.order_by(Category.name).all()
 
 
 @router.post("", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
-def create_category(payload: CategoryCreate, db: DbSession) -> Category:
+def create_category(payload: CategoryCreate, db: DbSession, user: CurrentUser) -> Category:
     name = payload.name.strip()
     # Idempotent: reusing an existing name+type just returns the stored category.
-    existing = db.query(Category).filter_by(name=name, type=payload.type).first()
+    existing = db.query(Category).filter_by(name=name, type=payload.type, user_id=user.id).first()
     if existing is not None:
         return existing
-    category = Category(name=name, type=payload.type)
+    category = Category(name=name, type=payload.type, user_id=user.id)
     db.add(category)
     db.commit()
     db.refresh(category)
@@ -37,8 +41,10 @@ def create_category(payload: CategoryCreate, db: DbSession) -> Category:
 
 
 @router.patch("/{category_id}", response_model=CategoryRead)
-def update_category(category_id: int, payload: CategoryUpdate, db: DbSession) -> Category:
-    category = db.get(Category, category_id)
+def update_category(
+    category_id: int, payload: CategoryUpdate, db: DbSession, user: CurrentUser
+) -> Category:
+    category = db.query(Category).filter_by(id=category_id, user_id=user.id).first()
     if category is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Category not found")
     try:
@@ -48,8 +54,8 @@ def update_category(category_id: int, payload: CategoryUpdate, db: DbSession) ->
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_category(category_id: int, db: DbSession) -> None:
-    category = db.get(Category, category_id)
+def remove_category(category_id: int, db: DbSession, user: CurrentUser) -> None:
+    category = db.query(Category).filter_by(id=category_id, user_id=user.id).first()
     if category is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Category not found")
     delete_category(db, category)

@@ -46,6 +46,26 @@
   margin-top: 0.5rem;
 }
 
+.login-card__switch {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.login-card__link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #38a3e1;
+  cursor: pointer;
+}
+
+.login-card__link:hover {
+  text-decoration: underline;
+}
+
 .header__btn {
   background: #fff;
   border: 1px solid #cbd5e1;
