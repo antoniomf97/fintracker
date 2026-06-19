@@ -1,6 +1,6 @@
 from collections.abc import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
@@ -42,3 +42,21 @@ def init_db() -> None:
     from app.models import models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+    _enable_row_level_security()
+
+
+def _enable_row_level_security() -> None:
+    """Deny-by-default every table against Postgres' auto-generated REST API.
+
+    Supabase exposes the ``public`` schema over PostgREST; a table without row-level
+    security is readable/writable by anyone holding the project's anon key. We never
+    use that API — all access goes through this backend, which connects as a role that
+    bypasses RLS — so enabling RLS with no policies blocks the API roles while leaving
+    our own queries untouched. Enabling is idempotent (safe to re-run) and skipped on
+    SQLite, which has no such concept.
+    """
+    if engine.dialect.name != "postgresql":
+        return
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            conn.execute(text(f'ALTER TABLE "{table.name}" ENABLE ROW LEVEL SECURITY'))
