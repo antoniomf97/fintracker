@@ -1,0 +1,8 @@
+# Netlify build config for the frontend (monorepo lives in frontend/).
+# Pinning this in code avoids fighting the UI's Base/Build/Publish fields.
+# With `base` set, `command` runs inside frontend/ and `publish` is relative to it,
+# so "dist" resolves to frontend/dist — Vite's build output.
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
