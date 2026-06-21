@@ -1,0 +1,21 @@
+name: Deploy on release
+
+# Production deploys are gated behind a version tag (e.g. `v0.2.0`) — ordinary
+# pushes to master do not deploy. Render auto-deploy is set to `off` and Netlify's
+# `ignore` command skips push builds; this workflow triggers both via their hooks.
+#
+# Tag a release with:
+#   git tag v0.2.0 && git push origin v0.2.0
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        run: curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+      - name: Trigger Netlify build
+        run: curl -fsSL -X POST -d '{}' "${{ secrets.NETLIFY_BUILD_HOOK }}"

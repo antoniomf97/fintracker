@@ -67,6 +67,9 @@
 }
 
 .header__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: #fff;
   border: 1px solid #cbd5e1;
   color: #475569;
@@ -470,6 +473,19 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(56, 163, 225, 0.4);
   transition: background 0.15s ease;
+  /* Center the glyph precisely (line-height alone leaves the + slightly high). */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* The "+" glyph renders a touch above the line-box center; nudge it down so it
+   sits in the optical center of the round button. */
+.fab__plus {
+  display: block;
+  line-height: 1;
+  transform: translateY(2px);
 }
 
 .fab:hover {
@@ -850,4 +866,135 @@
 .btn--danger:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+/* ---------------------------------------------------------------------------
+   Mobile / small screens. The desktop layout is fluid via fl/flex-wrap; this
+   block fixes the few spots that don't adapt: the data table, the corner
+   overlays, the header, and input zoom on iOS.
+   --------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  /* Tighter gutters so content isn't crammed. */
+  .header {
+    padding: 1.25rem 1rem 0.75rem;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  /* Header buttons become icon-only to fit one row beside the brand. */
+  .header__actions {
+    gap: 0.4rem;
+  }
+
+  .header__btn {
+    padding: 0.5rem 0.65rem;
+  }
+
+  .header__btn-label {
+    display: none;
+  }
+
+  /* Transaction table → stacked cards. Each row is a card; each cell becomes a
+     label/value line via its data-label. The header row is hidden. */
+  .transactions,
+  .transactions tbody,
+  .transactions tr,
+  .transactions td {
+    display: block;
+  }
+
+  .transactions thead {
+    display: none;
+  }
+
+  .transactions tr {
+    position: relative;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* No hover tint on touch; keep the last-row border (it's a card now). */
+  .transactions tbody tr:hover {
+    background: #fff;
+  }
+
+  .transactions tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .transactions td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.3rem 0;
+    border-bottom: none;
+    /* Leave room for the absolutely-positioned edit button (top-right). */
+    padding-right: 2.25rem;
+  }
+
+  .transactions td::before {
+    content: attr(data-label);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+  }
+
+  .transactions td.col-amount {
+    text-align: right;
+    font-size: 1.05rem;
+  }
+
+  /* Pin the edit cogwheel to the card's top-right, aligned with the date. */
+  .transactions td.col-actions {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.85rem;
+    width: auto;
+    padding: 0;
+  }
+
+  .transactions td.col-actions::before {
+    content: none;
+  }
+
+  /* Floating corner cards → full-width bottom sheets. */
+  .dialog,
+  .panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* Bigger touch targets. */
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* 16px inputs stop iOS Safari from auto-zooming on focus. */
+  .field input,
+  .field select,
+  .filters input,
+  .filters select,
+  .login-card input,
+  .analytics__custom input,
+  .cat__input {
+    font-size: 16px;
+  }
 }

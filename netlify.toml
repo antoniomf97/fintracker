@@ -6,3 +6,7 @@
   base = "frontend"
   command = "npm run build"
   publish = "dist"
+  # Deploy only on release: skip every Git-push build (exit 0 = "no changes,
+  # stop"). Build hooks bypass this command entirely, so the release deploy
+  # (GitHub Action POSTing to the Netlify build hook) still runs.
+  ignore = "exit 0"
