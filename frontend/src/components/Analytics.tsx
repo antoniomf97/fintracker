@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Cell, Pie, PieChart } from "recharts";
 
 import type { Transaction, TransactionType } from "../types";
@@ -124,6 +124,28 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
     name: string;
   } | null>(null);
 
+  // The donut is a fixed-pixel SVG; shrink it to fit narrow (phone) cards so it
+  // never overflows. We watch the card width and cap the size at DONUT_SIZE.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [donutSize, setDonutSize] = useState(DONUT_SIZE);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const update = () => {
+      const styles = getComputedStyle(el);
+      const padX =
+        parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+      const available = el.clientWidth - padX;
+      setDonutSize(Math.max(200, Math.min(DONUT_SIZE, available)));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  // Scale the radii (and label offset) proportionally from the original 280px design.
+  const scale = donutSize / DONUT_SIZE;
+
   const range =
     rangeKey === "custom"
       ? { from: customFrom, to: customTo }
@@ -148,7 +170,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
   const highlighted = active != null ? donutData[active] : null;
 
   return (
-    <section className="card analytics">
+    <section className="card analytics" ref={rootRef}>
       <div className="analytics__filters">
         {RANGES.map(({ key, label }) => (
           <button
@@ -180,10 +202,13 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
 
       <div className="analytics__body">
         <div className="analytics__donut">
-          <div className="donut">
+          <div
+            className="donut"
+            style={{ width: donutSize, height: donutSize }}
+          >
             <PieChart
-              width={DONUT_SIZE}
-              height={DONUT_SIZE}
+              width={donutSize}
+              height={donutSize}
               margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
             >
               <Pie
@@ -192,8 +217,8 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                 nameKey="label"
                 cx="50%"
                 cy="50%"
-                innerRadius={70}
-                outerRadius={104}
+                innerRadius={70 * scale}
+                outerRadius={104 * scale}
                 startAngle={90}
                 endAngle={-270}
                 stroke="#fff"
@@ -204,7 +229,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                 onMouseLeave={() => setActive(null)}
                 label={({ cx, cy, midAngle, outerRadius, percent, index }) => {
                   if (!percent) return null;
-                  const r = Number(outerRadius) + 16;
+                  const r = Number(outerRadius) + 16 * scale;
                   const angle = -Number(midAngle) * RADIAN;
                   return (
                     <text

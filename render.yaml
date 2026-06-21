@@ -9,7 +9,7 @@ services:
     rootDir: backend # Docker build context + Dockerfile path resolve from here
     plan: free
     healthCheckPath: /health
-    autoDeployTrigger: commit
+    autoDeployTrigger: off
     envVars:
       # Supabase session pooler string, with the +psycopg scheme:
       #   postgresql+psycopg://postgres.<ref>:<password>@<host>.pooler.supabase.com:5432/postgres

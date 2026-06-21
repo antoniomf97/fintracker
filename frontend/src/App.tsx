@@ -72,17 +72,20 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             className="header__btn"
             onClick={() => setOverlay("categories")}
           >
-            ☰ Categories
+            <span aria-hidden="true">☰</span>
+            <span className="header__btn-label">Categories</span>
           </button>
           <button
             type="button"
             className="header__btn"
             onClick={() => setOverlay("recurring")}
           >
-            ↻ Recurring
+            <span aria-hidden="true">↻</span>
+            <span className="header__btn-label">Recurring</span>
           </button>
           <button type="button" className="header__btn" onClick={onLogout}>
-            ⎋ Logout
+            <span aria-hidden="true">⎋</span>
+            <span className="header__btn-label">Logout</span>
           </button>
         </div>
       </header>
@@ -131,13 +134,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                   <tbody>
                     {visible.map((t) => (
                       <tr key={t.id}>
-                        <td>{t.date}</td>
-                        <td>
+                        <td data-label="Date">{t.date}</td>
+                        <td data-label="Type">
                           <span className={`badge badge--${t.type}`}>
                             {t.type}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Category">
                           {t.category ? (
                             t.category
                           ) : (
@@ -149,8 +152,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                             </span>
                           )}
                         </td>
-                        <td>{t.description ?? "—"}</td>
-                        <td className={`col-amount amount--${t.type}`}>
+                        <td data-label="Description">{t.description ?? "—"}</td>
+                        <td
+                          data-label="Amount"
+                          className={`col-amount amount--${t.type}`}
+                        >
                           {formatAmount(t.amount, t.type)}
                         </td>
                         <td className="col-actions">
@@ -180,7 +186,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         onClick={() => setOverlay("add")}
         aria-label="Add transaction"
       >
-        +
+        <span className="fab__plus" aria-hidden="true">
+          +
+        </span>
       </button>
 
       {overlay === "add" && (
