@@ -37,6 +37,7 @@ describe("EditTransactionDialog", () => {
         transaction={TRANSACTION}
         onClose={vi.fn()}
         onSaved={vi.fn()}
+        onDeleted={vi.fn()}
       />,
     );
 
@@ -53,6 +54,7 @@ describe("EditTransactionDialog", () => {
         transaction={TRANSACTION}
         onClose={vi.fn()}
         onSaved={onSaved}
+        onDeleted={vi.fn()}
       />,
     );
     await screen.findByDisplayValue("food");
@@ -80,6 +82,7 @@ describe("EditTransactionDialog", () => {
         transaction={TRANSACTION}
         onClose={vi.fn()}
         onSaved={vi.fn()}
+        onDeleted={vi.fn()}
       />,
     );
     await screen.findByDisplayValue("food");
@@ -102,6 +105,7 @@ describe("EditTransactionDialog", () => {
         transaction={TRANSACTION}
         onClose={vi.fn()}
         onSaved={vi.fn()}
+        onDeleted={vi.fn()}
       />,
     );
     await screen.findByDisplayValue("food");
@@ -111,5 +115,30 @@ describe("EditTransactionDialog", () => {
     expect(
       await screen.findByText("Failed to update transaction (422)"),
     ).toBeInTheDocument();
+  });
+
+  it("deletes only after confirming", async () => {
+    vi.mocked(api.deleteTransaction).mockResolvedValue();
+    const onDeleted = vi.fn();
+    render(
+      <EditTransactionDialog
+        transaction={TRANSACTION}
+        onClose={vi.fn()}
+        onSaved={vi.fn()}
+        onDeleted={onDeleted}
+      />,
+    );
+    await screen.findByDisplayValue("food");
+
+    // First Delete click opens the confirmation; nothing is deleted yet.
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    expect(api.deleteTransaction).not.toHaveBeenCalled();
+
+    // Confirm in the dialog (the second "Delete" button, rendered after the form).
+    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
+    fireEvent.click(deleteButtons[deleteButtons.length - 1]);
+
+    await waitFor(() => expect(api.deleteTransaction).toHaveBeenCalledWith(7));
+    expect(onDeleted).toHaveBeenCalled();
   });
 });

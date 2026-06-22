@@ -10,6 +10,16 @@ import { AddTransactionDialog } from "./components/AddTransactionDialog";
 import { Analytics } from "./components/Analytics";
 import { CategoriesPanel } from "./components/CategoriesPanel";
 import { EditTransactionDialog } from "./components/EditTransactionDialog";
+import {
+  AlertTriangleIcon,
+  ListIcon,
+  LogOutIcon,
+  MoonIcon,
+  PlusIcon,
+  RepeatIcon,
+  SettingsIcon,
+  SunIcon,
+} from "./components/icons";
 import { LoginPage } from "./components/LoginPage";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
@@ -42,71 +52,6 @@ function applyFilters(
     if (filters.to && t.date > filters.to) return false;
     return true;
   });
-}
-
-// Lucide icons (https://lucide.dev), inlined so they inherit color via currentColor
-// and theme automatically — no runtime dependency.
-function SunIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" />
-      <path d="M12 20v2" />
-      <path d="m4.93 4.93 1.41 1.41" />
-      <path d="m17.66 17.66 1.41 1.41" />
-      <path d="M2 12h2" />
-      <path d="M20 12h2" />
-      <path d="m6.34 17.66-1.41 1.41" />
-      <path d="m19.07 4.93-1.41 1.41" />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      width="28"
-      height="28"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
-    </svg>
-  );
 }
 
 function Dashboard({
@@ -157,7 +102,7 @@ function Dashboard({
             className="header__btn"
             onClick={() => setOverlay("categories")}
           >
-            <span aria-hidden="true">☰</span>
+            <ListIcon />
             <span className="header__btn-label">Categories</span>
           </button>
           <button
@@ -165,11 +110,11 @@ function Dashboard({
             className="header__btn"
             onClick={() => setOverlay("recurring")}
           >
-            <span aria-hidden="true">↻</span>
+            <RepeatIcon />
             <span className="header__btn-label">Recurring</span>
           </button>
           <button type="button" className="header__btn" onClick={onLogout}>
-            <span aria-hidden="true">⎋</span>
+            <LogOutIcon />
             <span className="header__btn-label">Logout</span>
           </button>
         </div>
@@ -233,7 +178,8 @@ function Dashboard({
                               className="cat-flag"
                               title="This category was deleted — pick a new one"
                             >
-                              ⚠ Uncategorized
+                              <AlertTriangleIcon size={14} />
+                              Uncategorized
                             </span>
                           )}
                         </td>
@@ -252,7 +198,7 @@ function Dashboard({
                             aria-label={`Edit transaction from ${t.date}`}
                             title="Edit"
                           >
-                            ⚙
+                            <SettingsIcon />
                           </button>
                         </td>
                       </tr>
@@ -271,7 +217,7 @@ function Dashboard({
         onClick={() => setOverlay("add")}
         aria-label="Add transaction"
       >
-        <PlusIcon />
+        <PlusIcon size={28} />
       </button>
 
       {overlay === "add" && (
@@ -297,6 +243,10 @@ function Dashboard({
           transaction={editing}
           onClose={() => setEditing(null)}
           onSaved={() => {
+            setEditing(null);
+            load();
+          }}
+          onDeleted={() => {
             setEditing(null);
             load();
           }}
