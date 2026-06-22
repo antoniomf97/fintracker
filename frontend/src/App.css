@@ -505,24 +505,14 @@
   border: none;
   background: var(--primary);
   color: var(--on-accent);
-  font-size: 1.8rem;
-  line-height: 1;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(56, 163, 225, 0.4);
   transition: background 0.15s ease;
-  /* Center the glyph precisely (line-height alone leaves the + slightly high). */
+  /* Center the icon. */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-}
-
-/* The "+" glyph renders a touch above the line-box center; nudge it down so it
-   sits in the optical center of the round button. */
-.fab__plus {
-  display: block;
-  line-height: 1;
-  transform: translateY(2px);
 }
 
 .fab:hover {
