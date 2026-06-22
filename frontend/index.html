@@ -5,6 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fintracker</title>
+    <script>
+      // Apply the saved/system theme before first paint to avoid a flash of the
+      // wrong theme. Mirrors the logic in src/hooks/useTheme.ts.
+      (function () {
+        try {
+          var saved = localStorage.getItem("fintracker_theme");
+          var dark =
+            saved === "dark" ||
+            (!saved &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
