@@ -7,7 +7,7 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1.5rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,8 +30,8 @@
 .login-card {
   width: 100%;
   max-width: 340px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 2rem 1.75rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -50,7 +50,7 @@
   margin: 1rem 0 0;
   text-align: center;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .login-card__link {
@@ -58,7 +58,7 @@
   border: none;
   padding: 0;
   font: inherit;
-  color: #38a3e1;
+  color: var(--primary);
   cursor: pointer;
 }
 
@@ -70,9 +70,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: #fff;
-  border: 1px solid #cbd5e1;
-  color: #475569;
+  background: var(--surface);
+  border: 1px solid var(--border-input);
+  color: var(--text-secondary);
   border-radius: 8px;
   padding: 0.4rem 0.85rem;
   font-size: 0.85rem;
@@ -81,21 +81,52 @@
 }
 
 .header__btn:hover {
-  background: #f8fafc;
-  border-color: #38a3e1;
-  color: #38a3e1;
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Fast custom tooltip — the native `title` attribute has a ~1.5s browser delay
+   that can't be tuned. Shown on hover/keyboard-focus with a quick fade. The
+   inverted bubble (text bg on surface) reads on both themes. */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--text);
+  color: var(--surface);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 300;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
 }
 
 .brand {
   margin: 0;
   font-size: 1.6rem;
   font-weight: 700;
-  color: #38a3e1;
+  color: var(--primary);
 }
 
 .subtitle {
   margin: 0.15rem 0 0;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -107,8 +138,8 @@
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -116,7 +147,7 @@
 
 .count {
   margin: 0 0 1rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -143,9 +174,9 @@
 }
 
 .range-pill {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #475569;
+  border: 1px solid var(--border-input);
+  background: var(--surface);
+  color: var(--text-secondary);
   border-radius: 999px;
   padding: 0.3rem 0.85rem;
   font-size: 0.8rem;
@@ -154,15 +185,15 @@
 }
 
 .range-pill:hover {
-  border-color: #38a3e1;
-  color: #38a3e1;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .range-pill--active,
 .range-pill--active:hover {
-  background: #38a3e1;
-  border-color: #38a3e1;
-  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-accent);
 }
 
 .analytics__custom {
@@ -173,11 +204,11 @@
 
 .analytics__custom input {
   padding: 0.3rem 0.5rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 0.8rem;
   font-family: inherit;
-  color: #475569;
+  color: var(--text-secondary);
 }
 
 .analytics__donut {
@@ -191,6 +222,12 @@
   position: relative;
   width: 280px;
   height: 280px;
+}
+
+/* The gaps between donut segments should match the card, not be hard white —
+   CSS overrides the SVG stroke attribute so it themes with the surface. */
+.donut .recharts-sector {
+  stroke: var(--surface);
 }
 
 .donut__center {
@@ -215,7 +252,7 @@
   font-size: 13px;
   font-weight: 600;
   /* letter-spacing: 0.08em; */
-  color: #94a3b8;
+  color: var(--text-faint);
 }
 
 .donut__balance {
@@ -246,7 +283,7 @@
   flex-wrap: wrap;
   gap: 0.25rem 1rem;
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--text-secondary);
 }
 
 .analytics__legend li,
@@ -290,7 +327,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: #334155;
+  color: var(--text-strong);
   white-space: nowrap;
   padding-left: 0.75rem;
 }
@@ -300,7 +337,7 @@
   height: 18px;
   border-radius: 6px;
   overflow: hidden;
-  background: #f1f5f9;
+  background: var(--surface-subtle);
 }
 
 .breakdown__seg {
@@ -313,7 +350,7 @@
 
 .breakdown__seg--empty {
   width: 100%;
-  background: #f1f5f9;
+  background: var(--surface-subtle);
 }
 
 .breakdown__legend {
@@ -322,12 +359,12 @@
 }
 
 .status {
-  color: #64748b;
+  color: var(--text-muted);
   padding: 1rem 0;
 }
 
 .status--error {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 /* Filter bar */
@@ -342,17 +379,16 @@
 .filters select,
 .filters input {
   padding: 0.45rem 0.6rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 0.9rem;
   font-family: inherit;
-  color: #475569;
 }
 
 .filters select:focus,
 .filters input:focus {
   outline: none;
-  border-color: #38a3e1;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(56, 163, 225, 0.15);
 }
 
@@ -372,12 +408,12 @@
 .transactions td {
   text-align: left;
   padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid #eef2f6;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .transactions thead th {
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-faint);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -388,7 +424,7 @@
 }
 
 .transactions tbody tr:hover {
-  background: #f8fafc;
+  background: var(--surface-hover);
 }
 
 .col-amount {
@@ -408,8 +444,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: #b45309;
-  background: #fef3c7;
+  color: var(--warn-fg);
+  background: var(--warn-bg);
   border-radius: 6px;
   padding: 0.1rem 0.5rem;
   font-size: 0.8rem;
@@ -418,17 +454,17 @@
 }
 
 .amount--income {
-  color: #16a34a;
+  color: var(--income);
   font-weight: 600;
 }
 
 .amount--expense {
-  color: #dc2626;
+  color: var(--danger);
   font-weight: 600;
 }
 
 .amount--savings {
-  color: #2563eb;
+  color: var(--savings);
   font-weight: 600;
 }
 
@@ -443,18 +479,18 @@
 }
 
 .badge--income {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--income-bg);
+  color: var(--income-fg);
 }
 
 .badge--expense {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--expense-bg);
+  color: var(--expense-fg);
 }
 
 .badge--savings {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--savings-bg);
+  color: var(--savings-fg);
 }
 
 /* Floating action button */
@@ -466,30 +502,20 @@
   height: 56px;
   border-radius: 50%;
   border: none;
-  background: #38a3e1;
-  color: #fff;
-  font-size: 1.8rem;
-  line-height: 1;
+  background: var(--primary);
+  color: var(--on-accent);
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(56, 163, 225, 0.4);
   transition: background 0.15s ease;
-  /* Center the glyph precisely (line-height alone leaves the + slightly high). */
+  /* Center the icon. */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
 }
 
-/* The "+" glyph renders a touch above the line-box center; nudge it down so it
-   sits in the optical center of the round button. */
-.fab__plus {
-  display: block;
-  line-height: 1;
-  transform: translateY(2px);
-}
-
 .fab:hover {
-  background: #2f8fcd;
+  background: var(--primary-hover);
 }
 
 /* Dialog — floating card above the FAB, does not block the page */
@@ -502,8 +528,8 @@
   max-width: calc(100vw - 4rem);
   max-height: calc(100vh - 8rem);
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
@@ -544,7 +570,7 @@
 .toggle__slider {
   position: absolute;
   inset: 0;
-  background: #cbd5e1;
+  background: var(--border-input);
   border-radius: 999px;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -557,13 +583,13 @@
   width: 16px;
   left: 3px;
   top: 3px;
-  background: #fff;
+  background: var(--on-accent);
   border-radius: 50%;
   transition: transform 0.2s ease;
 }
 
 .toggle input:checked + .toggle__slider {
-  background: #38a3e1;
+  background: var(--primary);
 }
 
 .toggle input:checked + .toggle__slider::before {
@@ -575,7 +601,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .field > span em {
@@ -587,7 +613,7 @@
 .field input,
 .field select {
   padding: 0.5rem 0.6rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 0.95rem;
   font-family: inherit;
@@ -596,12 +622,12 @@
 .field input:focus,
 .field select:focus {
   outline: none;
-  border-color: #38a3e1;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(56, 163, 225, 0.15);
 }
 
 .dialog__error {
-  color: #dc2626;
+  color: var(--danger);
   font-size: 0.85rem;
   margin: 0 0 0.75rem;
 }
@@ -623,12 +649,12 @@
 }
 
 .btn--primary {
-  background: #38a3e1;
-  color: #fff;
+  background: var(--primary);
+  color: var(--on-accent);
 }
 
 .btn--primary:hover {
-  background: #2f8fcd;
+  background: var(--primary-hover);
 }
 
 .btn--primary:disabled {
@@ -637,13 +663,13 @@
 }
 
 .btn--ghost {
-  background: #fff;
-  border-color: #cbd5e1;
-  color: #475569;
+  background: var(--surface);
+  border-color: var(--border-input);
+  color: var(--text-secondary);
 }
 
 .btn--ghost:hover {
-  background: #f8fafc;
+  background: var(--surface-hover);
 }
 
 /* Recurring panel — floating card below the header on the right */
@@ -656,8 +682,8 @@
   max-width: calc(100vw - 4rem);
   max-height: calc(100vh - 7rem);
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
@@ -674,12 +700,12 @@
   border: none;
   font-size: 1.4rem;
   line-height: 1;
-  color: #94a3b8;
+  color: var(--text-faint);
   cursor: pointer;
 }
 
 .panel__close:hover {
-  color: #475569;
+  color: var(--text-secondary);
 }
 
 .rules {
@@ -694,7 +720,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #eef2f6;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .rule:last-child {
@@ -708,7 +734,7 @@
 .rule__meta {
   margin-top: 0.25rem;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: capitalize;
 }
 
@@ -726,25 +752,25 @@
 .icon-btn {
   width: 32px;
   height: 32px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
-  color: #475569;
+  background: var(--surface);
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .icon-btn:hover {
-  background: #f8fafc;
-  border-color: #38a3e1;
+  background: var(--surface-hover);
+  border-color: var(--primary);
 }
 
 /* Categories panel */
 .cat-group {
   margin-top: 1rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #eef2f6;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .cat-group:first-of-type {
@@ -753,7 +779,7 @@
 
 .cat-group__empty {
   margin: 0.5rem 0;
-  color: #94a3b8;
+  color: var(--text-faint);
   font-size: 0.85rem;
 }
 
@@ -773,14 +799,14 @@
 
 .cat__name {
   font-size: 0.95rem;
-  color: #334155;
+  color: var(--text-strong);
 }
 
 .cat__input {
   flex: 1;
   min-width: 0;
   padding: 0.4rem 0.6rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 0.95rem;
   font-family: inherit;
@@ -788,7 +814,7 @@
 
 .cat__input:focus {
   outline: none;
-  border-color: #38a3e1;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(56, 163, 225, 0.15);
 }
 
@@ -799,8 +825,8 @@
 }
 
 .icon-btn--danger:hover {
-  border-color: #dc2626;
-  color: #dc2626;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .cat__actions .btn {
@@ -816,7 +842,7 @@
   margin-top: 0.4rem;
   background: none;
   border: none;
-  color: #38a3e1;
+  color: var(--primary);
   font-size: 0.85rem;
   font-family: inherit;
   cursor: pointer;
@@ -844,7 +870,7 @@
   max-width: 360px;
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
@@ -855,12 +881,12 @@
 }
 
 .btn--danger {
-  background: #dc2626;
-  color: #fff;
+  background: var(--danger);
+  color: var(--on-accent);
 }
 
 .btn--danger:hover {
-  background: #b91c1c;
+  background: var(--danger-hover);
 }
 
 .btn--danger:disabled {
@@ -915,7 +941,7 @@
 
   .transactions tr {
     position: relative;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 0.6rem 0.85rem;
     margin-bottom: 0.75rem;
@@ -923,7 +949,7 @@
 
   /* No hover tint on touch; keep the last-row border (it's a card now). */
   .transactions tbody tr:hover {
-    background: #fff;
+    background: var(--surface);
   }
 
   .transactions tbody tr:last-child td {
@@ -947,7 +973,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #94a3b8;
+    color: var(--text-faint);
   }
 
   .transactions td.col-amount {

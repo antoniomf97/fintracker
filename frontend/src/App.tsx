@@ -14,6 +14,7 @@ import { LoginPage } from "./components/LoginPage";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { useResource } from "./hooks/useResource";
+import { useTheme, type Theme } from "./hooks/useTheme";
 import type { Filters, Transaction } from "./types";
 import "./App.css";
 
@@ -43,7 +44,80 @@ function applyFilters(
   });
 }
 
-function Dashboard({ onLogout }: { onLogout: () => void }) {
+// Lucide icons (https://lucide.dev), inlined so they inherit color via currentColor
+// and theme automatically — no runtime dependency.
+function SunIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </svg>
+  );
+}
+
+function Dashboard({
+  onLogout,
+  theme,
+  onToggleTheme,
+}: {
+  onLogout: () => void;
+  theme: Theme;
+  onToggleTheme: () => void;
+}) {
   const {
     data: transactions,
     loading,
@@ -67,6 +141,17 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <p className="subtitle">Personal Finance Tracker</p>
         </div>
         <div className="header__actions">
+          <button
+            type="button"
+            className="header__btn"
+            onClick={onToggleTheme}
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+            data-tooltip={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+          </button>
           <button
             type="button"
             className="header__btn"
@@ -186,9 +271,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         onClick={() => setOverlay("add")}
         aria-label="Add transaction"
       >
-        <span className="fab__plus" aria-hidden="true">
-          +
-        </span>
+        <PlusIcon />
       </button>
 
       {overlay === "add" && (
@@ -225,6 +308,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
 function App() {
   const [token, setToken] = useState<string | null>(getToken());
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     // A 401 from any API call clears the stored token and bounces back to login.
@@ -240,7 +324,13 @@ function App() {
   if (!token) {
     return <LoginPage onLoggedIn={setToken} />;
   }
-  return <Dashboard onLogout={handleLogout} />;
+  return (
+    <Dashboard
+      onLogout={handleLogout}
+      theme={theme}
+      onToggleTheme={toggleTheme}
+    />
+  );
 }
 
 export default App;
