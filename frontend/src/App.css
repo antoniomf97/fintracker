@@ -224,12 +224,6 @@
   height: 280px;
 }
 
-/* The gaps between donut segments should match the card, not be hard white —
-   CSS overrides the SVG stroke attribute so it themes with the surface. */
-.donut .recharts-sector {
-  stroke: var(--surface);
-}
-
 .donut__center {
   position: absolute;
   inset: 0;
@@ -639,6 +633,11 @@
   margin-top: 0.5rem;
 }
 
+/* Pushes a destructive action to the far left, away from Cancel/Save. */
+.dialog__delete {
+  margin-right: auto;
+}
+
 .btn {
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -696,10 +695,11 @@
 }
 
 .panel__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 1.4rem;
-  line-height: 1;
   color: var(--text-faint);
   cursor: pointer;
 }
@@ -750,14 +750,15 @@
 }
 
 .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   border: 1px solid var(--border-input);
   border-radius: 6px;
   background: var(--surface);
   color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1;
   cursor: pointer;
 }
 

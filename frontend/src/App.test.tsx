@@ -24,6 +24,6 @@ beforeEach(() => {
 describe("App", () => {
   it("flags a transaction whose category was deleted", async () => {
     render(<App />);
-    expect(await screen.findByText(/⚠ Uncategorized/)).toBeInTheDocument();
+    expect(await screen.findByText(/Uncategorized/)).toBeInTheDocument();
   });
 });

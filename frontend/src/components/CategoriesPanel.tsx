@@ -9,6 +9,7 @@ import {
 import { useResource } from "../hooks/useResource";
 import type { Category, TransactionType } from "../types";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { SettingsIcon, Trash2Icon, XIcon } from "./icons";
 
 interface Props {
   onClose: () => void;
@@ -111,7 +112,7 @@ export function CategoriesPanel({ onClose, onChanged }: Props) {
             onClick={onClose}
             aria-label="Close"
           >
-            ×
+            <XIcon />
           </button>
         </div>
 
@@ -174,7 +175,7 @@ export function CategoriesPanel({ onClose, onChanged }: Props) {
                                 aria-label={`Edit ${category.name}`}
                                 title="Edit"
                               >
-                                ⚙
+                                <SettingsIcon />
                               </button>
                               <button
                                 type="button"
@@ -188,7 +189,7 @@ export function CategoriesPanel({ onClose, onChanged }: Props) {
                                 aria-label={`Delete ${category.name}`}
                                 title="Delete"
                               >
-                                🗑
+                                <Trash2Icon />
                               </button>
                             </div>
                           </>

@@ -214,6 +214,20 @@ export async function updateTransaction(
   return response.json();
 }
 
+export async function deleteTransaction(id: number): Promise<void> {
+  const response = await authFetch(`${API_BASE}/api/v1/transactions/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error(
+      await errorMessage(
+        response,
+        `Failed to delete transaction (${response.status})`,
+      ),
+    );
+  }
+}
+
 export async function fetchRecurring(): Promise<RecurringTransaction[]> {
   const response = await authFetch(`${API_BASE}/api/v1/recurring`);
   if (!response.ok) {

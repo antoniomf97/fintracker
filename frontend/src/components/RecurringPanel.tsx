@@ -5,6 +5,7 @@ import { useResource } from "../hooks/useResource";
 import type { RecurringTransaction } from "../types";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EditRecurringDialog } from "./EditRecurringDialog";
+import { SettingsIcon, XIcon } from "./icons";
 
 interface Props {
   onClose: () => void;
@@ -59,7 +60,7 @@ export function RecurringPanel({ onClose, onChanged }: Props) {
             onClick={onClose}
             aria-label="Close"
           >
-            ×
+            <XIcon />
           </button>
         </div>
 
@@ -89,7 +90,7 @@ export function RecurringPanel({ onClose, onChanged }: Props) {
                     aria-label="Edit"
                     title="Edit"
                   >
-                    ⚙
+                    <SettingsIcon />
                   </button>
                   <button
                     type="button"
