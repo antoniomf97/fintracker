@@ -224,12 +224,6 @@
   height: 280px;
 }
 
-/* The gaps between donut segments should match the card, not be hard white —
-   CSS overrides the SVG stroke attribute so it themes with the surface. */
-.donut .recharts-sector {
-  stroke: var(--surface);
-}
-
 .donut__center {
   position: absolute;
   inset: 0;

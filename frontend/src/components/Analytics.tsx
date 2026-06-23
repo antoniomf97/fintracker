@@ -221,8 +221,8 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
                 outerRadius={104 * scale}
                 startAngle={90}
                 endAngle={-270}
-                stroke="#fff"
-                strokeWidth={2}
+                stroke="none"
+                paddingAngle={2}
                 labelLine={false}
                 isAnimationActive={false}
                 onMouseEnter={(_, index) => setActive(index)}
