@@ -9,6 +9,8 @@ repos:
         # tsconfig*.json are JSONC (allow comments) — strict JSON parser can't read them
         exclude: ^frontend/tsconfig.*\.json$
       - id: check-added-large-files
+        # The 512x512 app icon (~558 kB) exceeds the 500 kB default — allow it.
+        exclude: ^frontend/public/fintracker\.png$
       - id: check-merge-conflict
 
   # Backend (Python) — lint + format
