@@ -418,26 +418,26 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
               </div>
             );
           })}
+
+          {flowTotal > 0 && (
+            <div className="flow">
+              <div className="flow__head">
+                <span className="flow__title">Income vs. spending</span>
+                <span
+                  className="flow__headline"
+                  style={{ color: flowReadout.color }}
+                >
+                  {flowReadout.text}
+                </span>
+              </div>
+              <div className="flow__rows">
+                {renderFlowRow(incomeRow)}
+                {renderFlowRow(spendingRow)}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {flowTotal > 0 && (
-        <div className="flow">
-          <div className="flow__head">
-            <span className="flow__title">Income vs. spending</span>
-            <span
-              className="flow__headline"
-              style={{ color: flowReadout.color }}
-            >
-              {flowReadout.text}
-            </span>
-          </div>
-          <div className="flow__rows">
-            {renderFlowRow(incomeRow)}
-            {renderFlowRow(spendingRow)}
-          </div>
-        </div>
-      )}
     </section>
   );
 }
