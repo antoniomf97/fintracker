@@ -114,6 +114,10 @@ function categorySlices(
   }));
 }
 
+// A segment of the income-vs-spending bar. No `color` means the neutral filler
+// (the surplus "free" or deficit "over" slot).
+type FlowSeg = { key: string; label: string; amount: number; color?: string };
+
 export function Analytics({ transactions }: { transactions: Transaction[] }) {
   const [rangeKey, setRangeKey] = useState<RangeKey>("month");
   const [customFrom, setCustomFrom] = useState("");
@@ -123,6 +127,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
     type: TransactionType;
     name: string;
   } | null>(null);
+  const [flowHover, setFlowHover] = useState<string | null>(null);
 
   // The donut is a fixed-pixel SVG; shrink it to fit narrow (phone) cards so it
   // never overflows. We watch the card width and cap the size at DONUT_SIZE.
@@ -168,6 +173,78 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
     color: TYPE_COLOR[type],
   }));
   const highlighted = active != null ? donutData[active] : null;
+
+  // Income vs. spending: two rows scaled to the same total. The neutral filler is
+  // the surplus ("free", income > spending) or the deficit ("over", spending > income).
+  const outflow = totals.expense + totals.savings;
+  const flowTotal = Math.max(totals.income, outflow);
+  const remainder = Math.max(0, totals.income - outflow);
+  const overusage = Math.max(0, outflow - totals.income);
+  const incomeRow: FlowSeg[] = [
+    {
+      key: "income",
+      label: "Income",
+      amount: totals.income,
+      color: TYPE_COLOR.income,
+    },
+    ...(overusage > 0
+      ? [{ key: "overusage", label: "Over income", amount: overusage }]
+      : []),
+  ].filter((s) => s.amount > 0);
+  const spendingRow: FlowSeg[] = [
+    {
+      key: "expense",
+      label: "Expenses",
+      amount: totals.expense,
+      color: TYPE_COLOR.expense,
+    },
+    {
+      key: "savings",
+      label: "Savings",
+      amount: totals.savings,
+      color: TYPE_COLOR.savings,
+    },
+    ...(remainder > 0
+      ? [{ key: "remainder", label: "Free", amount: remainder }]
+      : []),
+  ].filter((s) => s.amount > 0);
+  const flowHovered = [...incomeRow, ...spendingRow].find(
+    (s) => s.key === flowHover,
+  );
+  const flowReadout = flowHovered
+    ? {
+        text: `${flowHovered.label} ${euro(flowHovered.amount)}`,
+        color: flowHovered.color ?? "var(--text-muted)",
+      }
+    : remainder > 0
+      ? { text: `${euro(remainder)} free`, color: TYPE_COLOR.income }
+      : overusage > 0
+        ? { text: `${euro(overusage)} over`, color: TYPE_COLOR.expense }
+        : { text: "Balanced", color: "var(--text-muted)" };
+
+  const renderFlowRow = (segs: FlowSeg[]) => (
+    <div className="flow__bar">
+      {segs.map((s) => {
+        const pct = (s.amount / flowTotal) * 100;
+        return (
+          <span
+            key={s.key}
+            className={`flow__seg${s.color ? "" : " flow__seg--neutral"}`}
+            style={{
+              width: `${pct}%`,
+              ...(s.color ? { background: s.color } : {}),
+            }}
+            title={`${s.label}: ${euro(s.amount)}`}
+            onMouseEnter={() => setFlowHover(s.key)}
+            onMouseLeave={() => setFlowHover(null)}
+          >
+            {/* Hide the label in slivers too narrow to fit it. */}
+            {pct >= 8 && <span className="flow__pct">{Math.round(pct)}%</span>}
+          </span>
+        );
+      })}
+    </div>
+  );
 
   return (
     <section className="card analytics" ref={rootRef}>
@@ -341,6 +418,24 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
               </div>
             );
           })}
+
+          {flowTotal > 0 && (
+            <div className="flow">
+              <div className="flow__head">
+                <span className="flow__title">Income vs. spending</span>
+                <span
+                  className="flow__headline"
+                  style={{ color: flowReadout.color }}
+                >
+                  {flowReadout.text}
+                </span>
+              </div>
+              <div className="flow__rows">
+                {renderFlowRow(incomeRow)}
+                {renderFlowRow(spendingRow)}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>
