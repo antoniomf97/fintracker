@@ -463,6 +463,17 @@
   min-width: 140px;
 }
 
+/* Groups the from/to date inputs. The label only surfaces on mobile (below). */
+.filters__period {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.filters__period-label {
+  display: none;
+}
+
 /* Table */
 .transactions {
   width: 100%;
@@ -986,6 +997,59 @@
     padding: 1rem;
   }
 
+  /* Stack the donut above the breakdowns; align-items: center then centers the
+     donut horizontally. */
+  .analytics__body {
+    flex-direction: column;
+  }
+
+  /* Full-width ghost button that reveals the per-category breakdowns. */
+  .breakdowns__toggle {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-input);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .breakdowns__toggle:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* Hide the free-text category filter on mobile; the Type select + Period
+     range cover the common cases. Kept in the DOM so existing tests still find it. */
+  .filters__category {
+    display: none;
+  }
+
+  /* The from/to range stacks under its label, the two inputs sharing one row. */
+  .filters__period {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 0.4rem 0.6rem;
+  }
+
+  .filters__period-label {
+    display: block;
+    flex-basis: 100%;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+  }
+
+  .filters__period .filters__date {
+    flex: 1;
+    min-width: 0;
+  }
+
   /* Header buttons become icon-only to fit one row beside the brand. */
   .header__actions {
     gap: 0.4rem;
@@ -1034,10 +1098,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.3rem 0;
+    padding: 0.15rem 0;
     border-bottom: none;
-    /* Leave room for the absolutely-positioned edit button (top-right). */
-    padding-right: 2.25rem;
+  }
+
+  /* The whole card is tappable on mobile (opens the edit dialog). */
+  .transactions__row--tappable {
+    cursor: pointer;
   }
 
   .transactions td::before {
@@ -1054,17 +1121,9 @@
     font-size: 1.05rem;
   }
 
-  /* Pin the edit cogwheel to the card's top-right, aligned with the date. */
+  /* Drop the cogwheel cell — tapping the row edits instead. */
   .transactions td.col-actions {
-    position: absolute;
-    top: 0.55rem;
-    right: 0.85rem;
-    width: auto;
-    padding: 0;
-  }
-
-  .transactions td.col-actions::before {
-    content: none;
+    display: none;
   }
 
   /* Floating corner cards → full-width bottom sheets. */

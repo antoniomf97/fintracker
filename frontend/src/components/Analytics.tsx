@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Cell, Pie, PieChart } from "recharts";
 
+import { useIsMobile } from "../hooks/useIsMobile";
 import type { Transaction, TransactionType } from "../types";
 
 const TYPE_COLOR: Record<TransactionType, string> = {
@@ -25,6 +26,9 @@ const RANGES: { key: RangeKey; label: string }[] = [
   { key: "year", label: "This year" },
   { key: "custom", label: "Custom" },
 ];
+
+// Mobile shows a trimmed set of pills; the default ("month") stays in it.
+const MOBILE_RANGE_KEYS: RangeKey[] = ["all", "month", "custom"];
 
 const DONUT_SIZE = 280;
 const RADIAN = Math.PI / 180;
@@ -119,9 +123,11 @@ function categorySlices(
 type FlowSeg = { key: string; label: string; amount: number; color?: string };
 
 export function Analytics({ transactions }: { transactions: Transaction[] }) {
+  const isMobile = useIsMobile();
   const [rangeKey, setRangeKey] = useState<RangeKey>("month");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+  const [showDetails, setShowDetails] = useState(false);
   const [active, setActive] = useState<number | null>(null);
   const [barHover, setBarHover] = useState<{
     type: TransactionType;
@@ -150,6 +156,10 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
   }, []);
   // Scale the radii (and label offset) proportionally from the original 280px design.
   const scale = donutSize / DONUT_SIZE;
+
+  const ranges = isMobile
+    ? RANGES.filter((r) => MOBILE_RANGE_KEYS.includes(r.key))
+    : RANGES;
 
   const range =
     rangeKey === "custom"
@@ -249,7 +259,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
   return (
     <section className="card analytics" ref={rootRef}>
       <div className="analytics__filters">
-        {RANGES.map(({ key, label }) => (
+        {ranges.map(({ key, label }) => (
           <button
             key={key}
             type="button"
@@ -364,60 +374,76 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
         </div>
 
         <div className="analytics__breakdowns">
-          {TYPE_META.map(({ type, label }) => {
-            const slices = categorySlices(inScope, type);
-            const total = totals[type];
-            const color = TYPE_COLOR[type];
-            const hovered =
-              barHover?.type === type
-                ? slices.find((s) => s.name === barHover.name)
-                : undefined;
-            return (
-              <div className="breakdown" key={type}>
-                <div className="breakdown__head">
-                  <span className="breakdown__title" style={{ color }}>
-                    {label}
-                  </span>
-                  <span className="breakdown__total" style={{ color }}>
-                    {hovered
-                      ? `${hovered.label} ${euro(hovered.amount)} (${Math.round(
-                          (hovered.amount / total) * 100,
-                        )}%)`
-                      : euro(total)}
-                  </span>
-                </div>
-                <div className="breakdown__bar">
-                  {total > 0 ? (
-                    slices.map((c) => (
-                      <span
-                        key={c.name}
-                        className="breakdown__seg"
-                        style={{
-                          width: `${(c.amount / total) * 100}%`,
-                          background: c.color,
-                        }}
-                        title={`${c.label}: ${euro(c.amount)}`}
-                        onMouseEnter={() => setBarHover({ type, name: c.name })}
-                        onMouseLeave={() => setBarHover(null)}
-                      />
-                    ))
-                  ) : (
-                    <span className="breakdown__seg breakdown__seg--empty" />
+          {isMobile && (
+            <button
+              type="button"
+              className="breakdowns__toggle"
+              onClick={() => setShowDetails((shown) => !shown)}
+            >
+              {showDetails ? "Hide details" : "More details"}
+            </button>
+          )}
+
+          {(!isMobile || showDetails) &&
+            TYPE_META.map(({ type, label }) => {
+              const slices = categorySlices(inScope, type);
+              const total = totals[type];
+              const color = TYPE_COLOR[type];
+              const hovered =
+                barHover?.type === type
+                  ? slices.find((s) => s.name === barHover.name)
+                  : undefined;
+              return (
+                <div className="breakdown" key={type}>
+                  <div className="breakdown__head">
+                    <span className="breakdown__title" style={{ color }}>
+                      {label}
+                    </span>
+                    <span className="breakdown__total" style={{ color }}>
+                      {hovered
+                        ? `${hovered.label} ${euro(hovered.amount)} (${Math.round(
+                            (hovered.amount / total) * 100,
+                          )}%)`
+                        : euro(total)}
+                    </span>
+                  </div>
+                  <div className="breakdown__bar">
+                    {total > 0 ? (
+                      slices.map((c) => (
+                        <span
+                          key={c.name}
+                          className="breakdown__seg"
+                          style={{
+                            width: `${(c.amount / total) * 100}%`,
+                            background: c.color,
+                          }}
+                          title={`${c.label}: ${euro(c.amount)}`}
+                          onMouseEnter={() =>
+                            setBarHover({ type, name: c.name })
+                          }
+                          onMouseLeave={() => setBarHover(null)}
+                        />
+                      ))
+                    ) : (
+                      <span className="breakdown__seg breakdown__seg--empty" />
+                    )}
+                  </div>
+                  {slices.length > 0 && (
+                    <ul className="breakdown__legend">
+                      {slices.map((c) => (
+                        <li key={c.name}>
+                          <span
+                            className="dot"
+                            style={{ background: c.color }}
+                          />
+                          {c.label}
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </div>
-                {slices.length > 0 && (
-                  <ul className="breakdown__legend">
-                    {slices.map((c) => (
-                      <li key={c.name}>
-                        <span className="dot" style={{ background: c.color }} />
-                        {c.label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
 
           {flowTotal > 0 && (
             <div className="flow">
