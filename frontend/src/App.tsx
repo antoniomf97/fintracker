@@ -84,7 +84,7 @@ function Dashboard({
     <div className="page">
       <header className="header">
         <div>
-          <h1 className="brand">Fintracker</h1>
+          <h1 className="brand">FinTracker</h1>
           <p className="subtitle">Personal Finance Tracker</p>
         </div>
         <div className="header__actions">

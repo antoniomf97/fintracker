@@ -50,7 +50,7 @@ export function LoginPage({ onLoggedIn }: Props) {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
-        <h1 className="brand">Fintracker</h1>
+        <h1 className="brand">FinTracker</h1>
         <p className="subtitle">
           {isSignup ? "Create an account" : "Sign in to continue"}
         </p>
