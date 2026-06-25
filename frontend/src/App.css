@@ -196,26 +196,28 @@
   color: var(--on-accent);
 }
 
-.analytics__custom {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.analytics__custom input {
-  padding: 0.3rem 0.5rem;
+/* The active custom range, shown beside the pills; clicking it reopens the picker. */
+.analytics__range-label {
   border: 1px solid var(--border-input);
-  border-radius: 6px;
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
   font-size: 0.8rem;
   font-family: inherit;
-  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.analytics__range-label:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .analytics__donut {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0rem;
 }
 
 .donut {
@@ -356,7 +358,7 @@
    + savings below). The neutral segment is the surplus ("free") or deficit ("over"). */
 .flow {
   padding-top: 1rem;
-  padding-bottom: 0.75rem;
+  padding-bottom: 1.25rem;
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -449,6 +451,8 @@
   border-radius: 6px;
   font-size: 0.9rem;
   font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .filters select:focus,
@@ -978,12 +982,40 @@
     padding: 1.25rem 1rem 0.75rem;
   }
 
-  .container {
-    padding: 1rem;
+  .container,
+  .card {
+    padding: 0.75rem;
   }
 
-  .card {
-    padding: 1rem;
+  /* Stack the donut above the breakdowns; align-items: center then centers the
+     donut horizontally. */
+  .analytics__body {
+    flex-direction: column;
+  }
+
+  /* Full-width ghost button that reveals the per-category breakdowns. */
+  .breakdowns__toggle {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-input);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .breakdowns__toggle:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* Hide the free-text category filter on mobile; the Type select + Date-range
+     button cover the common cases. Kept in the DOM so existing tests still find it. */
+  .filters__category {
+    display: none;
   }
 
   /* Header buttons become icon-only to fit one row beside the brand. */
@@ -1034,10 +1066,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.3rem 0;
+    padding: 0.15rem 0;
     border-bottom: none;
-    /* Leave room for the absolutely-positioned edit button (top-right). */
-    padding-right: 2.25rem;
+  }
+
+  /* The whole card is tappable on mobile (opens the edit dialog). */
+  .transactions__row--tappable {
+    cursor: pointer;
   }
 
   .transactions td::before {
@@ -1054,17 +1089,9 @@
     font-size: 1.05rem;
   }
 
-  /* Pin the edit cogwheel to the card's top-right, aligned with the date. */
+  /* Drop the cogwheel cell — tapping the row edits instead. */
   .transactions td.col-actions {
-    position: absolute;
-    top: 0.55rem;
-    right: 0.85rem;
-    width: auto;
-    padding: 0;
-  }
-
-  .transactions td.col-actions::before {
-    content: none;
+    display: none;
   }
 
   /* Floating corner cards → full-width bottom sheets. */
@@ -1092,7 +1119,6 @@
   .filters input,
   .filters select,
   .login-card input,
-  .analytics__custom input,
   .cat__input {
     font-size: 16px;
   }

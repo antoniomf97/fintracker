@@ -1,4 +1,8 @@
+import { useState } from "react";
+
 import type { Filters, TypeFilter } from "../types";
+import { DateRangeDialog } from "./DateRangeDialog";
+import { formatRange } from "./dateRange";
 
 interface Props {
   filters: Filters;
@@ -7,6 +11,8 @@ interface Props {
 }
 
 export function TransactionFilters({ filters, onChange, onClear }: Props) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
   function update<K extends keyof Filters>(key: K, value: Filters[K]) {
     onChange({ ...filters, [key]: value });
   }
@@ -32,25 +38,28 @@ export function TransactionFilters({ filters, onChange, onClear }: Props) {
         onChange={(event) => update("category", event.target.value)}
       />
 
-      <input
-        className="filters__date"
-        type="date"
-        aria-label="From date"
-        value={filters.from}
-        onChange={(event) => update("from", event.target.value)}
-      />
-
-      <input
-        className="filters__date"
-        type="date"
-        aria-label="To date"
-        value={filters.to}
-        onChange={(event) => update("to", event.target.value)}
-      />
+      {/* The from/to range lives in a shared dialog; the label doubles as its
+          current value (formatRange returns "Date range" when unset). */}
+      <button
+        type="button"
+        className="btn btn--ghost filters__range"
+        onClick={() => setPickerOpen(true)}
+      >
+        {formatRange(filters.from, filters.to)}
+      </button>
 
       <button type="button" className="btn btn--ghost" onClick={onClear}>
         Clear
       </button>
+
+      {pickerOpen && (
+        <DateRangeDialog
+          from={filters.from}
+          to={filters.to}
+          onApply={(from, to) => onChange({ ...filters, from, to })}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { expect, test } from "./helpers";
 test("loads the app shell", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Fintracker" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "FinTracker" })).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Add transaction" }),
   ).toBeVisible();

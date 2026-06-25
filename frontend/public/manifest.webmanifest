@@ -1,6 +1,6 @@
 {
-  "name": "Fintracker",
-  "short_name": "Fintracker",
+  "name": "FinTracker",
+  "short_name": "FinTracker",
   "description": "Personal finance tracker",
   "start_url": "/",
   "scope": "/",

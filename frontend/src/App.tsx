@@ -23,6 +23,7 @@ import {
 import { LoginPage } from "./components/LoginPage";
 import { RecurringPanel } from "./components/RecurringPanel";
 import { TransactionFilters } from "./components/TransactionFilters";
+import { useIsMobile } from "./hooks/useIsMobile";
 import { useResource } from "./hooks/useResource";
 import { useTheme, type Theme } from "./hooks/useTheme";
 import type { Filters, Transaction } from "./types";
@@ -63,6 +64,7 @@ function Dashboard({
   theme: Theme;
   onToggleTheme: () => void;
 }) {
+  const isMobile = useIsMobile();
   const {
     data: transactions,
     loading,
@@ -82,7 +84,7 @@ function Dashboard({
     <div className="page">
       <header className="header">
         <div>
-          <h1 className="brand">Fintracker</h1>
+          <h1 className="brand">FinTracker</h1>
           <p className="subtitle">Personal Finance Tracker</p>
         </div>
         <div className="header__actions">
@@ -163,7 +165,35 @@ function Dashboard({
                   </thead>
                   <tbody>
                     {visible.map((t) => (
-                      <tr key={t.id}>
+                      <tr
+                        key={t.id}
+                        // On mobile the cogwheel is hidden; tapping the row opens
+                        // the same edit dialog. Desktop keeps the explicit button.
+                        onClick={isMobile ? () => setEditing(t) : undefined}
+                        role={isMobile ? "button" : undefined}
+                        tabIndex={isMobile ? 0 : undefined}
+                        onKeyDown={
+                          isMobile
+                            ? (event) => {
+                                if (
+                                  event.key === "Enter" ||
+                                  event.key === " "
+                                ) {
+                                  event.preventDefault();
+                                  setEditing(t);
+                                }
+                              }
+                            : undefined
+                        }
+                        aria-label={
+                          isMobile
+                            ? `Edit transaction from ${t.date}`
+                            : undefined
+                        }
+                        className={
+                          isMobile ? "transactions__row--tappable" : undefined
+                        }
+                      >
                         <td data-label="Date">{t.date}</td>
                         <td data-label="Type">
                           <span className={`badge badge--${t.type}`}>

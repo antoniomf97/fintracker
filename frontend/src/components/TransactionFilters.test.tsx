@@ -86,4 +86,30 @@ describe("TransactionFilters", () => {
     fireEvent.click(screen.getByRole("button", { name: "Clear" }));
     expect(onClear).toHaveBeenCalledOnce();
   });
+
+  it("opens the date-range picker and emits the applied range", () => {
+    const onChange = vi.fn();
+    render(
+      <TransactionFilters
+        filters={EMPTY}
+        onChange={onChange}
+        onClear={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Date range" }));
+    fireEvent.change(screen.getByLabelText("From"), {
+      target: { value: "2022-05-01" },
+    });
+    fireEvent.change(screen.getByLabelText("To"), {
+      target: { value: "2022-05-31" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY,
+      from: "2022-05-01",
+      to: "2022-05-31",
+    });
+  });
 });
