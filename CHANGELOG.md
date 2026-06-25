@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-25
+
+### Added
+
+- Date-range picker dialog (From / To) for the analytics "Custom" range and the
+  transaction list's period filter, replacing the inline date fields on both
+  desktop and mobile.
+
+### Changed
+
+- Reworked the mobile layout: centered donut, a trimmed set of range pills (All
+  time / This month / Custom), per-category breakdowns tucked behind a "More
+  details" toggle, tap-a-row to edit (no cogwheel), and tighter transaction cards.
+- Renamed the app to "FinTracker" across the header, login, browser tab, and PWA
+  manifest.
+
+### Fixed
+
+- Native form controls (the type filter and date inputs) now follow the dark
+  theme instead of rendering in light mode.
+
 ## [0.2.1] - 2026-06-24
 
 ### Fixed
