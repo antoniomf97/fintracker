@@ -91,6 +91,27 @@ describe("Analytics", () => {
     expect(balanceText()).toBe("€700.00");
   });
 
+  it("applies a custom range picked from the date dialog", () => {
+    render(<Analytics transactions={SAMPLE} />);
+    // Default "This month" excludes the 2020 sample.
+    expect(balanceText()).toBe("€0.00");
+
+    fireEvent.click(screen.getByRole("button", { name: "Custom" }));
+    // Custom with no bounds yet is unbounded, so the 2020 sample is included:
+    // 1200 - 400 - 100 = 700.
+    expect(balanceText()).toBe("€700.00");
+
+    // Apply a 2021 window — no sample falls in it, so the scope empties.
+    fireEvent.change(screen.getByLabelText("From"), {
+      target: { value: "2021-01-01" },
+    });
+    fireEvent.change(screen.getByLabelText("To"), {
+      target: { value: "2021-12-31" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    expect(balanceText()).toBe("€0.00");
+  });
+
   it("on mobile, trims to 3 range pills and hides breakdowns until expanded", () => {
     forceMobile();
     render(<Analytics transactions={SAMPLE} />);

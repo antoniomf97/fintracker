@@ -3,6 +3,8 @@ import { Cell, Pie, PieChart } from "recharts";
 
 import { useIsMobile } from "../hooks/useIsMobile";
 import type { Transaction, TransactionType } from "../types";
+import { DateRangeDialog } from "./DateRangeDialog";
+import { formatRange } from "./dateRange";
 
 const TYPE_COLOR: Record<TransactionType, string> = {
   income: "#16a34a",
@@ -127,6 +129,7 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
   const [rangeKey, setRangeKey] = useState<RangeKey>("month");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [active, setActive] = useState<number | null>(null);
   const [barHover, setBarHover] = useState<{
@@ -264,26 +267,23 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
             key={key}
             type="button"
             className={`range-pill${rangeKey === key ? " range-pill--active" : ""}`}
-            onClick={() => setRangeKey(key)}
+            onClick={() => {
+              setRangeKey(key);
+              // The Custom pill opens the range picker (and reopens on re-click).
+              if (key === "custom") setPickerOpen(true);
+            }}
           >
             {label}
           </button>
         ))}
-        {rangeKey === "custom" && (
-          <span className="analytics__custom">
-            <input
-              type="date"
-              aria-label="From date"
-              value={customFrom}
-              onChange={(event) => setCustomFrom(event.target.value)}
-            />
-            <input
-              type="date"
-              aria-label="To date"
-              value={customTo}
-              onChange={(event) => setCustomTo(event.target.value)}
-            />
-          </span>
+        {rangeKey === "custom" && (customFrom || customTo) && (
+          <button
+            type="button"
+            className="analytics__range-label"
+            onClick={() => setPickerOpen(true)}
+          >
+            {formatRange(customFrom, customTo)}
+          </button>
         )}
       </div>
 
@@ -464,6 +464,18 @@ export function Analytics({ transactions }: { transactions: Transaction[] }) {
           )}
         </div>
       </div>
+
+      {pickerOpen && (
+        <DateRangeDialog
+          from={customFrom}
+          to={customTo}
+          onApply={(nextFrom, nextTo) => {
+            setCustomFrom(nextFrom);
+            setCustomTo(nextTo);
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
     </section>
   );
 }

@@ -196,19 +196,21 @@
   color: var(--on-accent);
 }
 
-.analytics__custom {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.analytics__custom input {
-  padding: 0.3rem 0.5rem;
+/* The active custom range, shown beside the pills; clicking it reopens the picker. */
+.analytics__range-label {
   border: 1px solid var(--border-input);
-  border-radius: 6px;
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
   font-size: 0.8rem;
   font-family: inherit;
-  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.analytics__range-label:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .analytics__donut {
@@ -449,6 +451,8 @@
   border-radius: 6px;
   font-size: 0.9rem;
   font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .filters select:focus,
@@ -461,17 +465,6 @@
 .filters__category {
   flex: 1;
   min-width: 140px;
-}
-
-/* Groups the from/to date inputs. The label only surfaces on mobile (below). */
-.filters__period {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.filters__period-label {
-  display: none;
 }
 
 /* Table */
@@ -1022,32 +1015,10 @@
     color: var(--primary);
   }
 
-  /* Hide the free-text category filter on mobile; the Type select + Period
-     range cover the common cases. Kept in the DOM so existing tests still find it. */
+  /* Hide the free-text category filter on mobile; the Type select + Date-range
+     button cover the common cases. Kept in the DOM so existing tests still find it. */
   .filters__category {
     display: none;
-  }
-
-  /* The from/to range stacks under its label, the two inputs sharing one row. */
-  .filters__period {
-    flex-wrap: wrap;
-    width: 100%;
-    gap: 0.4rem 0.6rem;
-  }
-
-  .filters__period-label {
-    display: block;
-    flex-basis: 100%;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--text-faint);
-  }
-
-  .filters__period .filters__date {
-    flex: 1;
-    min-width: 0;
   }
 
   /* Header buttons become icon-only to fit one row beside the brand. */
@@ -1151,7 +1122,6 @@
   .filters input,
   .filters select,
   .login-card input,
-  .analytics__custom input,
   .cat__input {
     font-size: 16px;
   }

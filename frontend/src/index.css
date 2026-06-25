@@ -2,6 +2,11 @@
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
 
+  /* Tells the browser which palette to render native controls in (select
+     dropdowns, the select arrow, date-picker popups, scrollbars). The dark
+     theme flips this below. */
+  color-scheme: light;
+
   /* Semantic color tokens (light theme). The dark theme below overrides these,
      so component CSS only ever references var(--token) — never raw hex. Light
      values mirror the original palette exactly, so light mode is unchanged. */
@@ -47,6 +52,8 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
+
   --bg: #0f172a;
   --surface: #1e293b;
   --surface-hover: #334155;
