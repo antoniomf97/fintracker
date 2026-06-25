@@ -217,7 +217,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0rem;
 }
 
 .donut {
@@ -358,7 +358,7 @@
    + savings below). The neutral segment is the surplus ("free") or deficit ("over"). */
 .flow {
   padding-top: 1rem;
-  padding-bottom: 0.75rem;
+  padding-bottom: 1.25rem;
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -982,12 +982,9 @@
     padding: 1.25rem 1rem 0.75rem;
   }
 
-  .container {
-    padding: 1rem;
-  }
-
+  .container,
   .card {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   /* Stack the donut above the breakdowns; align-items: center then centers the
