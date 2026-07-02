@@ -21,6 +21,9 @@ export interface NewTransaction {
   category: string;
   amount: string;
   description: string | null;
+  // Request-only for savings: when false, creation skips the available-money check.
+  // The backend ignores it for other types and never persists it.
+  requires_income?: boolean;
 }
 
 // "all" means the type filter is off; otherwise it narrows to one transaction type.
