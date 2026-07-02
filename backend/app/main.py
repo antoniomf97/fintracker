@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.config import settings
+from app.core.config import assert_jwt_secret_is_safe, settings
 from app.database import SessionLocal, init_db
 from app.routers import auth, categories, health, recurring, transactions
 from app.services.categories import backfill_categories
@@ -11,6 +11,7 @@ from app.services.categories import backfill_categories
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    assert_jwt_secret_is_safe()
     init_db()
     with SessionLocal() as db:
         backfill_categories(db)
