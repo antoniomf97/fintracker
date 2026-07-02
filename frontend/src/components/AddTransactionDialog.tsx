@@ -39,6 +39,7 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today());
   const [recurring, setRecurring] = useState(false);
+  const [requiresIncome, setRequiresIncome] = useState(true);
   const [frequency, setFrequency] = useState<Frequency>("monthly");
   const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +98,7 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
           category,
           amount,
           description: description.trim() || null,
+          requires_income: requiresIncome,
         });
       }
       onCreated();
@@ -200,6 +202,21 @@ export function AddTransactionDialog({ onClose, onCreated }: Props) {
           <span className="toggle__slider" />
         </label>
       </div>
+
+      {/* Savings only: unchecking lets the entry skip the available-money check. */}
+      {type === "savings" && (
+        <div className="field field--inline">
+          <span>Requires income</span>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={requiresIncome}
+              onChange={(event) => setRequiresIncome(event.target.checked)}
+            />
+            <span className="toggle__slider" />
+          </label>
+        </div>
+      )}
 
       {recurring && (
         <>

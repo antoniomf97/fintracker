@@ -81,6 +81,19 @@ def test_savings_without_income_fails(client):
     assert response.status_code == 400
 
 
+def test_savings_without_income_succeeds_when_not_required(client):
+    # requires_income=False bypasses the available-money check, so this saves
+    # despite there being no income to draw from.
+    response = client.post(BASE_URL, json={**_txn("savings", 10), "requires_income": False})
+    assert response.status_code == 201
+    assert response.json()["type"] == "savings"
+
+    # And the row is really there (the flag isn't persisted or echoed back).
+    stored = client.get(BASE_URL).json()
+    assert [t["type"] for t in stored] == ["savings"]
+    assert "requires_income" not in stored[0]
+
+
 def test_rejected_savings_is_not_persisted(client):
     client.post(BASE_URL, json=_txn("income", 100))
     client.post(BASE_URL, json=_txn("savings", 500))

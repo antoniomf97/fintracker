@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- "Requires income" toggle on savings entries (default on). Unchecking it lets a
+  savings entry be created without enough available money, for tracking savings
+  that aren't funded from tracked income.
+
 ## [0.3.0] - 2026-06-25
 
 ### Added

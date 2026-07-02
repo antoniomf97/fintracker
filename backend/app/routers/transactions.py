@@ -18,12 +18,17 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 @router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 def create_transaction(payload: TransactionCreate, db: DbSession, user: CurrentUser) -> Transaction:
-    if payload.type == "savings" and payload.amount > available_balance(db, user.id):
+    if (
+        payload.type == "savings"
+        and payload.requires_income
+        and payload.amount > available_balance(db, user.id)
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You don't have enough available money",
         )
-    transaction = Transaction(**payload.model_dump(), user_id=user.id)
+    # requires_income is request-only (Transaction has no such column), so drop it here.
+    transaction = Transaction(**payload.model_dump(exclude={"requires_income"}), user_id=user.id)
     db.add(transaction)
     ensure_category(db, transaction.category, transaction.type, user.id)
     db.commit()
