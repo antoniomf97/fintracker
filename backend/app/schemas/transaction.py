@@ -19,6 +19,9 @@ class TransactionBase(BaseModel):
 
 class TransactionCreate(TransactionBase):
     category: str = Field(min_length=1)
+    # Request-only: a savings entry with this unchecked skips the "enough available
+    # money" check at creation. Not persisted, so it stays off TransactionBase/Read.
+    requires_income: bool = True
 
 
 class TransactionUpdate(BaseModel):
