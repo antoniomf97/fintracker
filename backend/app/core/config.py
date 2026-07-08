@@ -22,3 +22,19 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+_DEFAULT_JWT_SECRET = Settings.model_fields["JWT_SECRET"].default
+
+
+def assert_jwt_secret_is_safe(current: Settings = settings) -> None:
+    """Refuse to start production-shaped deployments on the public dev JWT secret.
+
+    A Postgres DATABASE_URL is our proxy for "production": there, a missing
+    JWT_SECRET env var must be a hard error, not a silent fallback to the default
+    (which would make every token forgeable). SQLite/dev stays friction-free.
+    """
+    if current.JWT_SECRET == _DEFAULT_JWT_SECRET and current.DATABASE_URL.startswith("postgresql"):
+        raise RuntimeError(
+            "JWT_SECRET is still the built-in dev default while running against "
+            "Postgres. Set a long random JWT_SECRET environment variable."
+        )

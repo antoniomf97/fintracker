@@ -64,6 +64,23 @@ def test_signup_rejects_short_password(client):
     assert response.status_code == 422
 
 
+def test_signup_rejects_password_over_72_bytes(client):
+    response = _signup(client, "bob", "x" * 80)
+    assert response.status_code == 422
+
+
+def test_signup_rejects_password_over_72_bytes_multibyte(client):
+    # 45 chars but 90 bytes in UTF-8 — the limit is bytes, not characters.
+    response = _signup(client, "bob", "é" * 45)
+    assert response.status_code == 422
+
+
+def test_login_with_over_long_password_is_401_not_500(client):
+    _signup(client, "frank")
+    response = client.post(LOGIN_URL, json={"username": "frank", "password": "x" * 80})
+    assert response.status_code == 401
+
+
 def test_login_after_signup(client):
     _signup(client, "carol")
     response = client.post(LOGIN_URL, json={"username": "carol", "password": "password123"})
