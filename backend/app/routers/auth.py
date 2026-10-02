@@ -11,7 +11,13 @@ from app.core.security import (
 )
 from app.database import get_db
 from app.models.models import User
-from app.schemas.auth import LoginRequest, SignupRequest, TokenResponse, UserRead
+from app.schemas.auth import (
+    BCRYPT_MAX_PASSWORD_BYTES,
+    LoginRequest,
+    SignupRequest,
+    TokenResponse,
+    UserRead,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -34,7 +40,16 @@ def signup(payload: SignupRequest, db: DbSession) -> TokenResponse:
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest, db: DbSession) -> TokenResponse:
     user = db.query(User).filter_by(username=payload.username.strip()).first()
-    if user is None or not verify_password(payload.password, user.password_hash):
+    # No stored password exceeds bcrypt's 72-byte limit (signup rejects them), so an
+    # over-long password is simply wrong — 401, not a validation error that would
+    # leak policy detail. Checked first because bcrypt 5 raises on longer input.
+    password_too_long = len(payload.password.encode()) > BCRYPT_MAX_PASSWORD_BYTES
+    bad_password = (
+        password_too_long
+        or user is None
+        or not verify_password(payload.password, user.password_hash)
+    )
+    if bad_password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
